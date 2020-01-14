@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'Main_Screen.dart';
 import 'Table_Screen.dart';
 void main() {
-  debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+  //debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
 
   runApp(Caffe());}
 
