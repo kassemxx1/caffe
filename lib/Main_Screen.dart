@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Table_Screen.dart';
+
 class MainScreen extends StatefulWidget {
   static const String id = 'Main_Screen';
   @override
@@ -26,44 +27,32 @@ class _MainScreenState extends State<MainScreen> {
     },
 
   ];
-  void savesharedcat()async{
-    var preferences = await SharedPreferences.getInstance();
-    preferences.setString('listcat', json.encode(categoriesshared));
 
-  }
-void addnewcat(String name)async{
-  var list=[];
-  var preferences = await SharedPreferences.getInstance();
-    list=json.decode(preferences.getString('listcat'));
-    setState(() {
-      list.add({'name':name});
-    });
-    preferences.remove('listcat');
-    preferences.setString('listcat',json.encode(list));
-}
   void getallItems()async{
     TableScreen.AllItems.clear();
     var url1 = 'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/categories';
     var response = await http.get(url1);
 
     Map  data = json.decode(response.body);
-    print(response.body);
+
     for (var msg in data['documents']) {
       final name =msg['fields']['name']["stringValue"];
       setState(() {
         TableScreen.AllItems.add({
           'name':name,
+
         });
+        print(name);
       });
     }
-    print(TableScreen.AllItems);
+
   }
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
- //   getallItems();
-    savesharedcat();
+    getallItems();
+
   }
   @override
   Widget build(BuildContext context) {
