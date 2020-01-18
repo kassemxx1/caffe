@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_counter/flutter_counter.dart';
 import 'package:database/database.dart';
+final database = MemoryDatabase();
 class TableScreen extends StatefulWidget {
   static const String id = 'Table_Screen';
   static var AllItems = [];
@@ -17,7 +18,9 @@ class TableScreen extends StatefulWidget {
 class _TableScreenState extends State<TableScreen> {
   List<trans> tableitems = [];
   double heightofAppbar = 80.0;
-  final database = MemoryDatabase();
+
+
+
   bool _saving = false;
   var Listcat = [];
   var subcat = [
@@ -28,6 +31,26 @@ class _TableScreenState extends State<TableScreen> {
     }
   ];
 void getwaiting(String tablename)async{
+  final response = await database.collection(TableScreen.TableName).search(
+    query: Query.parse(
+      "get:(yes)",
+    ),
+  );
+  tableitems.clear();
+  for (var msg in response.snapshots){
+    final name = msg.data['name'];
+    final price = msg.data['price'];
+    final qtt =msg.data['qtt'];
+    print(name);
+    setState(() {
+      tableitems.add(trans(name, price, qtt, price));
+    });
+    msg.document.delete();
+
+
+
+
+  }
 
 }
   void getsub(String cat) async {
@@ -49,7 +72,6 @@ void getwaiting(String tablename)async{
     });
 
     var response = await http.post(url, body: body);
-
     var data = json.decode(response.body);
     TableScreen.ListOfSubCategories.clear();
     try {
@@ -95,6 +117,7 @@ void getwaiting(String tablename)async{
   void initState() {
     // TODO: implement initState
     super.initState();
+  getwaiting(TableScreen.TableName);
 //    getcat();
   }
 
@@ -297,16 +320,7 @@ void getwaiting(String tablename)async{
                           });
 
 
-                          await database.collection(TableScreen.TableName).insert(
-                              data: {
-                                'name':TableScreen.ListOfSubCategories[index]['name'],
-                                'price':TableScreen.ListOfSubCategories[index]['price'],
-                                'qtt':1.0,
 
-
-                              }
-
-                          );
 //                          setState(() {
 //                            var count = tableitems.length;
 //                            tableitems.add({
@@ -359,7 +373,22 @@ void getwaiting(String tablename)async{
                         child: MaterialButton(
                           minWidth: data.size.width / 9.2,
                           color: Colors.blue,
-                          onPressed: () {},
+                          onPressed: () async{
+                            for (var msg in tableitems){
+                              await database.collection(TableScreen.TableName).insert(data:  {
+                              'name':msg.description,
+                              'price':msg.Price,
+                              'qtt':msg.qtt,
+                                'get':'yes',
+                              },
+                              );
+
+                            }
+                            Navigator.of(context).pop();
+
+
+
+                          },
                           child: Text('Waiting'),
                         ),
                       ),
