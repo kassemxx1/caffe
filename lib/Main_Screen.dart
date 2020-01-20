@@ -7,6 +7,7 @@ import 'Table_Screen.dart';
 
 class MainScreen extends StatefulWidget {
   static const String id = 'Main_Screen';
+  static var  ListOfTable=[];
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -27,6 +28,27 @@ class _MainScreenState extends State<MainScreen> {
     },
 
   ];
+  void getTableNumber()async{
+    TableScreen.AllItems.clear();
+    var url1 = 'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/tables';
+    var response = await http.get(url1);
+
+    Map  data = json.decode(response.body);
+
+    for (var msg in data['documents']) {
+      final numb =msg['fields']['numb']["stringValue"];
+      final iswaiting=msg['fields']['iswaiting']["booleanValue"];
+      setState(() {
+        MainScreen.ListOfTable.add({
+          'numb':numb,
+          'iswaiting':iswaiting,
+
+        });
+
+      });
+
+    }
+  }
 
   void getallItems()async{
     TableScreen.AllItems.clear();
@@ -51,6 +73,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getTableNumber();
     getallItems();
 
   }
@@ -66,7 +89,7 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 class DesktopWidget extends StatelessWidget {
-  var ListOfTable=['1','2','3','4','5','6','7','8','9','10'];
+
 
 
 
@@ -96,7 +119,9 @@ class DesktopWidget extends StatelessWidget {
                       padding: EdgeInsets.all(5.0),
                       child: GestureDetector(
                         onDoubleTap: () {
-                          TableScreen.TableName='Table ${ListOfTable[index]}';
+
+                          TableScreen.TableName='Table ${MainScreen.ListOfTable[index]['numb']}';
+                          TableScreen.indexx=index;
                           Navigator.pushNamed(context, TableScreen.id);
 
 
@@ -109,13 +134,20 @@ class DesktopWidget extends StatelessWidget {
                                   image: AssetImage("assets/images/table.jpeg"),
                                   fit: BoxFit.cover),
                             ),
-                            child: Center(child: Text('Table ${ListOfTable[index]}',style: TextStyle(fontSize: 40),)),
+                            child: Center(child: Column(
+                              children: <Widget>[
+                                Text('Table ${MainScreen.ListOfTable[index]['numb']}',style: TextStyle(fontSize: 40),),
+                                MainScreen.ListOfTable[index]['iswaiting']?Text('Waiting',style: TextStyle(color: Colors.red),):
+                                    Text('Available',style: TextStyle(color:Colors.green),),
+
+                              ],
+                            )),
                           ),
                         ),
                       ),
                     );
                   },
-                  childCount: ListOfTable.length,
+                  childCount: MainScreen.ListOfTable.length,
                 ),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   ///no.of items in the horizontal axis

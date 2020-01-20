@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:caffe/Main_Screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud/modal_progress_hud.dart';
@@ -11,6 +12,7 @@ class TableScreen extends StatefulWidget {
   static String TableName = '';
   static var ListOfCategories = [];
   static var ListOfSubCategories = [];
+  static var indexx;
   @override
   _TableScreenState createState() => _TableScreenState();
 }
@@ -384,7 +386,10 @@ void getwaiting(String tablename)async{
                               );
 
                             }
+
+                            MainScreen.ListOfTable[TableScreen.indexx]['iswaiting']=true;
                             Navigator.of(context).pop();
+
 
 
 
@@ -397,7 +402,60 @@ void getwaiting(String tablename)async{
                         child: MaterialButton(
                           minWidth: data.size.width / 9.2,
                           color: Colors.blue,
-                          onPressed: () {},
+                          onPressed: () async{
+                            var posturl =
+                                'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
+                            var postlist=[];
+                            for (var i in tableitems){
+                              setState(() {
+                                postlist.add({
+                                  "mapValue":{
+
+                                    "fields": {
+                                      "qtt": {
+                                        "integerValue": "${i.qtt}"
+                                      },
+                                      "price": {
+                                        "integerValue": "${i.Price}"
+                                      },
+                                      "name": {
+                                        "stringValue": "${i.description}"
+                                      }
+                                    }
+                                  }
+
+                                });
+                              });
+                            }
+                            print(postlist);
+
+                            var bodypost = jsonEncode({
+                              "fields": {
+                                "billnum": {
+                                  "stringValue": "1"
+                                },
+                                "tablename": {
+                                  "stringValue": "1"},
+                                "items": {
+                                  "arrayValue": {
+                                    "values":
+                                        postlist
+
+                                  }
+                                }
+
+
+
+
+
+                              }
+                            });
+                            print(postlist);
+                            print(bodypost);
+                            await http.post(posturl, body: bodypost);
+
+
+                          },
                           child: Text('Submit'),
                         ),
                       ),
