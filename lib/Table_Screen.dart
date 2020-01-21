@@ -20,7 +20,7 @@ class TableScreen extends StatefulWidget {
 class _TableScreenState extends State<TableScreen> {
   List<trans> tableitems = [];
   double heightofAppbar = 80.0;
-
+var total =0.0;
 
 
   bool _saving = false;
@@ -101,6 +101,9 @@ void getwaiting(String tablename)async{
       });
     }
     var result = qtts.reduce((sum, element) => sum + element);
+    setState(() {
+      total=result;
+    });
     return new Future(() => result);
   }
 
@@ -403,6 +406,18 @@ void getwaiting(String tablename)async{
                           minWidth: data.size.width / 9.2,
                           color: Colors.blue,
                           onPressed: () async{
+                            print(MainScreen.ListOfTable);
+                            for(var i in MainScreen.ListOfTable){
+                              if('Table ${i['numb']}'==TableScreen.TableName){
+
+                                print(i['iswaiting']);
+                                setState(() {
+                                  i['iswaiting']=false;
+                                });
+
+                              }
+                            }
+                            print(MainScreen.ListOfTable);
                             var posturl =
                                 'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
                             var postlist=[];
@@ -413,13 +428,16 @@ void getwaiting(String tablename)async{
 
                                     "fields": {
                                       "qtt": {
-                                        "integerValue": "${i.qtt}"
+                                        "doubleValue": "${i.qtt}"
                                       },
                                       "price": {
-                                        "integerValue": "${i.Price}"
+                                        "doubleValue": "${i.Price}"
                                       },
                                       "name": {
                                         "stringValue": "${i.description}"
+                                      },
+                                      "totalprice": {
+                                        "doubleValue":"${i.qtt*i.Price}"
                                       }
                                     }
                                   }
@@ -436,6 +454,9 @@ void getwaiting(String tablename)async{
                                 },
                                 "tablename": {
                                   "stringValue": "1"},
+                                "total":{
+                                  "doubleValue":total
+                                },
                                 "items": {
                                   "arrayValue": {
                                     "values":
@@ -444,16 +465,13 @@ void getwaiting(String tablename)async{
                                   }
                                 }
 
-
-
-
-
                               }
                             });
                             print(postlist);
                             print(bodypost);
                             await http.post(posturl, body: bodypost);
 
+                            Navigator.of(context).pop();
 
                           },
                           child: Text('Submit'),
