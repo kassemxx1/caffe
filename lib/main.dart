@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'Main_Screen.dart';
 import 'Table_Screen.dart';
+import 'Report_Screen.dart';
+
 void main() {
   debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
 
@@ -20,6 +22,8 @@ class _CaffeState extends State<Caffe> {
       routes: {
         MainScreen.id : (context) => MainScreen(),
         TableScreen.id:(context) =>TableScreen(),
+        ReportScreen.id:(context) =>ReportScreen(),
+
       },
     );
   }

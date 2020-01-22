@@ -30,6 +30,9 @@ dependencies:
   flutter_counter: ^1.0.3
   database: ^0.2.7
   dropdown_formfield: ^0.1.0
+  flutter_datetime_picker: ^1.2.8
+  date_format: ^1.0.8
+
 
 
 
