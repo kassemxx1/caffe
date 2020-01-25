@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:caffe/Report_Screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:responsive_builder/responsive_builder.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 
 import 'Table_Screen.dart';
 import 'constants.dart';
@@ -50,6 +49,7 @@ class _MainScreenState extends State<MainScreen> {
       });
     }
   }
+ 
 
   void getTableNumber() async {
     MainScreen.ListOfTable.clear();
@@ -95,7 +95,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
+  
     super.initState();
     getTableNumber();
     getallItems();
@@ -305,7 +305,7 @@ class _MainScreenState extends State<MainScreen> {
                                           "name": {"stringValue": newitem},
                                           "price": {"integerValue": newprice},
                                           "sub": {
-                                            "stringValue": "${categorieValue}"
+                                            "stringValue": "$categorieValue"
                                           },
                                         }
                                       });

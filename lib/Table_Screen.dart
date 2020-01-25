@@ -5,7 +5,13 @@ import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_counter/flutter_counter.dart';
 import 'package:database/database.dart';
+
+var now = new DateTime.now();
+int day = now.day;
+int year = now.year;
+int month = now.month;
 final database = MemoryDatabase();
+
 class TableScreen extends StatefulWidget {
   static const String id = 'Table_Screen';
   static var AllItems = [];
@@ -20,8 +26,7 @@ class TableScreen extends StatefulWidget {
 class _TableScreenState extends State<TableScreen> {
   List<trans> tableitems = [];
   double heightofAppbar = 80.0;
-var total =0.0;
-
+  var total = 0.0;
 
   bool _saving = false;
   var Listcat = [];
@@ -32,29 +37,25 @@ var total =0.0;
       'price': 4000,
     }
   ];
-void getwaiting(String tablename)async{
-  final response = await database.collection(TableScreen.TableName).search(
-    query: Query.parse(
-      "get:(yes)",
-    ),
-  );
-  tableitems.clear();
-  for (var msg in response.snapshots){
-    final name = msg.data['name'];
-    final price = msg.data['price'];
-    final qtt =msg.data['qtt'];
-    print(name);
-    setState(() {
-      tableitems.add(trans(name, price, qtt, price));
-    });
-    msg.document.delete();
-
-
-
-
+  void getwaiting(String tablename) async {
+    final response = await database.collection(TableScreen.TableName).search(
+          query: Query.parse(
+            "get:(yes)",
+          ),
+        );
+    tableitems.clear();
+    for (var msg in response.snapshots) {
+      final name = msg.data['name'];
+      final price = msg.data['price'];
+      final qtt = msg.data['qtt'];
+      print(name);
+      setState(() {
+        tableitems.add(trans(name, price, qtt, price));
+      });
+      msg.document.delete();
+    }
   }
 
-}
   void getsub(String cat) async {
     var url =
         'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents:runQuery';
@@ -95,14 +96,14 @@ void getwaiting(String tablename)async{
   Future<double> sumtotal() async {
     var qtts = [0.0];
     for (var i in tableitems) {
-      final price = i.totalprice*i.qtt;
+      final price = i.totalprice * i.qtt;
       setState(() {
         qtts.add(price);
       });
     }
     var result = qtts.reduce((sum, element) => sum + element);
     setState(() {
-      total=result;
+      total = result;
     });
     return new Future(() => result);
   }
@@ -120,9 +121,8 @@ void getwaiting(String tablename)async{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-  getwaiting(TableScreen.TableName);
+    getwaiting(TableScreen.TableName);
 //    getcat();
   }
 
@@ -146,76 +146,82 @@ void getwaiting(String tablename)async{
                   color: Colors.blue,
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
-                    child: DataTable(columns: [
-                      DataColumn(
-                        label: Text(
-                          'Description',
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.bold),
-                        ),
-                        numeric: true,
-                      ),
-                      DataColumn(
+                    child: DataTable(
+                      columns: [
+                        DataColumn(
                           label: Text(
-                        'Price',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      )),
-                      DataColumn(
-                          label: Text(
-                        'Qtt',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      )),
-                      DataColumn(
-                          label: Text(
-                        'total',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      )),
-                      DataColumn(
-                          label: Text(
-                            '#',
+                            'Description',
                             style: TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
-                          )),
-                    ],
-                      rows: tableitems.map((trans) =>DataRow(
-                          cells: [
-                            DataCell(Text(
-                              '${trans.description}',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            )),
-                            DataCell(Text(
-                              '${trans.Price}',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            )),
-                            DataCell(
-                              Counter(
-                                initialValue: trans.qtt,
-                                minValue: 1.0,
-                                maxValue: 100.0,
-                                step: 1.0,
-                                decimalPlaces: 0,
-                                onChanged: (value) { // get the latest value from here
-                                  setState(() {
-                                    trans.qtt = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            DataCell(Text(
-                              '${trans.totalprice*trans.qtt}',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            )),
-                            DataCell(
-                                IconButton(icon: Icon(Icons.delete,color: Colors.red,),
+                          ),
+                          numeric: true,
+                        ),
+                        DataColumn(
+                            label: Text(
+                          'Price',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          'Qtt',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          'total',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                        )),
+                        DataColumn(
+                            label: Text(
+                          '#',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                        )),
+                      ],
+                      rows: tableitems
+                          .map((trans) => DataRow(cells: [
+                                DataCell(Text(
+                                  '${trans.description}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                )),
+                                DataCell(Text(
+                                  '${trans.Price}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                )),
+                                DataCell(
+                                  Counter(
+                                    initialValue: trans.qtt,
+                                    minValue: 1.0,
+                                    maxValue: 100.0,
+                                    step: 1.0,
+                                    decimalPlaces: 0,
+                                    onChanged: (value) {
+                                      // get the latest value from here
+                                      setState(() {
+                                        trans.qtt = value;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                DataCell(Text(
+                                  '${trans.totalprice * trans.qtt}',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                )),
+                                DataCell(IconButton(
+                                  icon: Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
                                   onPressed: () {
                                     showDialog(
                                         context: context,
                                         builder: (BuildContext context) {
                                           return AlertDialog(
-                                            title: Text('Are You Sure to Delete?'),
+                                            title:
+                                                Text('Are You Sure to Delete?'),
                                             actions: <Widget>[
                                               MaterialButton(
                                                 child: Text('Cancel'),
@@ -225,27 +231,14 @@ void getwaiting(String tablename)async{
                                               ),
                                               MaterialButton(
                                                   child: Text('Yes'),
-                                                  onPressed: () async {
-
-                                                  }),
+                                                  onPressed: () async {}),
                                             ],
                                           );
                                         });
                                   },
                                 )),
-
-
-
-
-
-                          ]
-                      )).toList(),
-
-
-
-
-
-
+                              ]))
+                          .toList(),
                     ),
                   )
 
@@ -314,17 +307,16 @@ void getwaiting(String tablename)async{
                             ],
                           ),
                         ),
-                        onTap: () async{
+                        onTap: () async {
                           setState(() {
-                            tableitems.add(trans(TableScreen.ListOfSubCategories[index]['name'],
-                                double.parse(TableScreen.ListOfSubCategories[index]['price']),
+                            tableitems.add(trans(
+                                TableScreen.ListOfSubCategories[index]['name'],
+                                double.parse(TableScreen
+                                    .ListOfSubCategories[index]['price']),
                                 1.0,
-                                double.parse(TableScreen.ListOfSubCategories[index]['price'])));
-
-
+                                double.parse(TableScreen
+                                    .ListOfSubCategories[index]['price'])));
                           });
-
-
 
 //                          setState(() {
 //                            var count = tableitems.length;
@@ -378,24 +370,23 @@ void getwaiting(String tablename)async{
                         child: MaterialButton(
                           minWidth: data.size.width / 9.2,
                           color: Colors.blue,
-                          onPressed: () async{
-                            for (var msg in tableitems){
-                              await database.collection(TableScreen.TableName).insert(data:  {
-                              'name':msg.description,
-                              'price':msg.Price,
-                              'qtt':msg.qtt,
-                                'get':'yes',
-                              },
+                          onPressed: () async {
+                            for (var msg in tableitems) {
+                              await database
+                                  .collection(TableScreen.TableName)
+                                  .insert(
+                                data: {
+                                  'name': msg.description,
+                                  'price': msg.Price,
+                                  'qtt': msg.qtt,
+                                  'get': 'yes',
+                                },
                               );
-
                             }
 
-                            MainScreen.ListOfTable[TableScreen.indexx]['iswaiting']=true;
+                            MainScreen.ListOfTable[TableScreen.indexx]
+                                ['iswaiting'] = true;
                             Navigator.of(context).pop();
-
-
-
-
                           },
                           child: Text('Waiting'),
                         ),
@@ -405,43 +396,36 @@ void getwaiting(String tablename)async{
                         child: MaterialButton(
                           minWidth: data.size.width / 9.2,
                           color: Colors.blue,
-                          onPressed: () async{
+                          onPressed: () async {
                             print(MainScreen.ListOfTable);
-                            for(var i in MainScreen.ListOfTable){
-                              if('Table ${i['numb']}'==TableScreen.TableName){
-
+                            for (var i in MainScreen.ListOfTable) {
+                              if ('Table ${i['numb']}' ==
+                                  TableScreen.TableName) {
                                 print(i['iswaiting']);
                                 setState(() {
-                                  i['iswaiting']=false;
+                                  i['iswaiting'] = false;
                                 });
-
                               }
                             }
                             print(MainScreen.ListOfTable);
                             var posturl =
                                 'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
-                            var postlist=[];
-                            for (var i in tableitems){
+                            var postlist = [];
+                            for (var i in tableitems) {
                               setState(() {
                                 postlist.add({
-                                  "mapValue":{
-
+                                  "mapValue": {
                                     "fields": {
-                                      "qtt": {
-                                        "doubleValue": "${i.qtt}"
-                                      },
-                                      "price": {
-                                        "doubleValue": "${i.Price}"
-                                      },
+                                      "qtt": {"doubleValue": "${i.qtt}"},
+                                      "price": {"doubleValue": "${i.Price}"},
                                       "name": {
                                         "stringValue": "${i.description}"
                                       },
                                       "totalprice": {
-                                        "doubleValue":"${i.qtt*i.Price}"
+                                        "doubleValue": "${i.qtt * i.Price}"
                                       }
                                     }
                                   }
-
                                 });
                               });
                             }
@@ -449,22 +433,12 @@ void getwaiting(String tablename)async{
 
                             var bodypost = jsonEncode({
                               "fields": {
-                                "billnum": {
-                                  "stringValue": "1"
-                                },
-                                "tablename": {
-                                  "stringValue": "1"},
-                                "total":{
-                                  "doubleValue":total
-                                },
+                                "billnum": {"stringValue": "1"},
+                                "tablename": {"stringValue": "1"},
+                                "total": {"doubleValue": total},
                                 "items": {
-                                  "arrayValue": {
-                                    "values":
-                                        postlist
-
-                                  }
+                                  "arrayValue": {"values": postlist}
                                 }
-
                               }
                             });
                             print(postlist);
@@ -472,7 +446,6 @@ void getwaiting(String tablename)async{
                             await http.post(posturl, body: bodypost);
 
                             Navigator.of(context).pop();
-
                           },
                           child: Text('Submit'),
                         ),
@@ -494,5 +467,5 @@ class trans {
   double Price;
   double qtt;
   double totalprice;
-  trans(this.description,this.Price, this.qtt, this.totalprice);
+  trans(this.description, this.Price, this.qtt, this.totalprice);
 }

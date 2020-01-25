@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:http/http.dart' as http;
+
+
+
 var now = new DateTime.now();
 int day = now.day;
 int year = now.year;
 int month = now.month;
 class ReportScreen extends StatefulWidget {
   static const String id = 'Report_Screen';
+
   @override
   _ReportScreenState createState() => _ReportScreenState();
 }
@@ -19,38 +23,59 @@ class _ReportScreenState extends State<ReportScreen> {
   var startDate = DateTime(year, month, day, 0, 0, 0, 0, 0);
   var endDate = new DateTime(year, month, day, 23, 59, 59, 99, 99);
   var transactionList=[];
+  var DayTransaction=[];
 
   void getalltransaction()async{
     var url =
         'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
     var response = await http.get(url);
     Map data = json.decode(response.body);
-    print(data);
     transactionList.clear();
     for (var msg in data["documents"]) {
       final numb = msg["fields"]["billnum"]["stringValue"];
      final tablename=msg["fields"]["tablename"]["stringValue"];
       final total=msg["fields"]["total"]["doubleValue"];
-      print(tablename);
+      final time = msg["createTime"];
+
       setState(() {
         transactionList.add({
          'billnum':numb,
           'tablename':tablename,
           'total':total,
+          'timestamp':time,
 
         });
       });
+      print(transactionList);
     }
-    print(transactionList);
+  }
+  Future<double> getalltransactiondate(DateTime startDate ,DateTime endDate)async{
+    var qtts = [0.0];
+    print(transactionList.length);
+    for (var msg in transactionList) {
+//      final numb = msg["fields"]["billnum"]["stringValue"];
+//      final tablename=msg["fields"]["tablename"]["stringValue"];
+      final total=msg["total"].todouble();
+      final time = msg["timestamp"];
+      print(time);
+      print(total);
+//      if (time.isAfter(startDate) && time.isBefore(endDate) ){
+//        setState(() {
+//          qtts.add(total);
+//        });
+//      }
+    }
+
+    var result = qtts.reduce((sum, element) => sum + element);
+    print(result);
+    return new Future(() => result);
   }
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getalltransaction();
 
   }
-
   @override
   Widget build(BuildContext context) {
     final data = MediaQuery.of(context);
@@ -81,7 +106,6 @@ class _ReportScreenState extends State<ReportScreen> {
                                     setState(() {
                                       startDate = date;
                                     });
-
                                     print(startDate);
                                   },
                                   currentTime: DateTime.now(),
@@ -134,7 +158,20 @@ class _ReportScreenState extends State<ReportScreen> {
                 Row(
                   children: <Widget>[
                     Text('Daily',style: TextStyle(fontSize: 35*data.size.width/2000),),
-
+                    FutureBuilder(
+                        builder:
+                            (BuildContext context, AsyncSnapshot<double> qttnumbr) {
+                          return Center(
+                            child: Text(
+                              'Tolal  : ${qttnumbr.data} L.L',
+                              style: TextStyle(color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20),
+                            ),
+                          );
+                        },
+                        initialData: 1.0,
+                        future:getalltransactiondate(startDate, endDate)),
                   ],
                 ),
               ],
