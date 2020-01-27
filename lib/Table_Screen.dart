@@ -37,6 +37,37 @@ class _TableScreenState extends State<TableScreen> {
       'price': 4000,
     }
   ];
+  void getalltransaction()async{
+    var url =
+        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
+    var response = await http.get(url);
+    Map data = json.decode(response.body);
+    MainScreen.alltrans.clear();
+    for (var msg in data["documents"]) {
+      final numb = msg["fields"]["billnum"]["stringValue"];
+      final tablename=msg["fields"]["tablename"]["stringValue"];
+      final total=msg["fields"]["total"]["doubleValue"].toDouble();
+      final time = DateTime.parse(msg["createTime"]);
+      final items= msg["fields"]["items"];
+
+      setState(() {
+        MainScreen.alltrans.add({
+          'billnum':numb,
+          'tablename':tablename,
+          'total':total,
+          'timestamp':time,
+          'items':jsonEncode(items),
+        });
+      });
+
+
+    }
+//    MainScreen.alltrans.sort((a, b) {
+//      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
+//    });
+    Navigator.of(context).pop();
+    print(MainScreen.alltrans);
+  }
   void getwaiting(String tablename) async {
     final response = await database.collection(TableScreen.TableName).search(
           query: Query.parse(
@@ -92,7 +123,6 @@ class _TableScreenState extends State<TableScreen> {
       print(e);
     }
   }
-
   Future<double> sumtotal() async {
     var qtts = [0.0];
     for (var i in tableitems) {
@@ -107,7 +137,6 @@ class _TableScreenState extends State<TableScreen> {
     });
     return new Future(() => result);
   }
-
   void adddocument() async {
     var posturl =
         'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/categories';
@@ -118,7 +147,6 @@ class _TableScreenState extends State<TableScreen> {
     });
     await http.post(posturl, body: bodypost);
   }
-
   @override
   void initState() {
     super.initState();
@@ -383,7 +411,6 @@ class _TableScreenState extends State<TableScreen> {
                                 },
                               );
                             }
-
                             MainScreen.ListOfTable[TableScreen.indexx]
                                 ['iswaiting'] = true;
                             Navigator.of(context).pop();
@@ -433,7 +460,7 @@ class _TableScreenState extends State<TableScreen> {
 
                             var bodypost = jsonEncode({
                               "fields": {
-                                "billnum": {"stringValue": "1"},
+                                "billnum": {"stringValue": "${MainScreen.alltrans.length + 1}"},
                                 "tablename": {"stringValue": "1"},
                                 "total": {"doubleValue": total},
                                 "items": {
@@ -444,8 +471,9 @@ class _TableScreenState extends State<TableScreen> {
                             print(postlist);
                             print(bodypost);
                             await http.post(posturl, body: bodypost);
+                            getalltransaction();
 
-                            Navigator.of(context).pop();
+
                           },
                           child: Text('Submit'),
                         ),

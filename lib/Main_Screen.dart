@@ -11,6 +11,7 @@ import 'package:dropdown_formfield/dropdown_formfield.dart';
 class MainScreen extends StatefulWidget {
   static const String id = 'Main_Screen';
   static var ListOfTable = [];
+  static var alltrans=[];
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -30,6 +31,36 @@ class _MainScreenState extends State<MainScreen> {
   var newitem = '';
   var newprice = 0;
   var allcat = [];
+  void getalltransaction()async{
+    var url =
+        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
+    var response = await http.get(url);
+    Map data = json.decode(response.body);
+    MainScreen.alltrans.clear();
+    for (var msg in data["documents"]) {
+      final numb = msg["fields"]["billnum"]["stringValue"];
+      final tablename=msg["fields"]["tablename"]["stringValue"];
+      final total=msg["fields"]["total"]["doubleValue"].toDouble();
+      final time = DateTime.parse(msg["createTime"]);
+      final items= msg["fields"]["items"];
+
+      setState(() {
+        MainScreen.alltrans.add({
+          'billnum':numb,
+          'tablename':tablename,
+          'total':total,
+          'timestamp':time,
+          'items':jsonEncode(items),
+        });
+      });
+
+
+    }
+//    MainScreen.alltrans.sort((a, b) {
+//      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
+//    });
+    print(MainScreen.alltrans);
+  }
 
   void getallcat() async {
     var url1 =
@@ -48,6 +79,7 @@ class _MainScreenState extends State<MainScreen> {
         });
       });
     }
+
   }
  
 
@@ -88,7 +120,6 @@ class _MainScreenState extends State<MainScreen> {
         TableScreen.AllItems.add({
           'name': name,
         });
-        print(name);
       });
     }
   }
@@ -100,6 +131,8 @@ class _MainScreenState extends State<MainScreen> {
     getTableNumber();
     getallItems();
     getallcat();
+    getalltransaction();
+
   }
 
   @override
