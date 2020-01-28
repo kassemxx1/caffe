@@ -5,13 +5,17 @@ import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_counter/flutter_counter.dart';
 import 'package:database/database.dart';
+import 'package:pdf/pdf.dart';
+
+import 'package:pdf/widgets.dart' as pdf;
+import 'package:printing/printing.dart';
 
 var now = new DateTime.now();
 int day = now.day;
 int year = now.year;
 int month = now.month;
 final database = MemoryDatabase();
-
+List<trans> tableitems = [];
 class TableScreen extends StatefulWidget {
   static const String id = 'Table_Screen';
   static var AllItems = [];
@@ -24,10 +28,10 @@ class TableScreen extends StatefulWidget {
 }
 
 class _TableScreenState extends State<TableScreen> {
-  List<trans> tableitems = [];
+
   double heightofAppbar = 80.0;
   var total = 0.0;
-
+  final pdf.Document doc = pdf.Document();
   bool _saving = false;
   var Listcat = [];
   var subcat = [
@@ -162,6 +166,7 @@ class _TableScreenState extends State<TableScreen> {
           preferredSize: Size.fromHeight(heightofAppbar),
           child: AppBar(
             title: Text(TableScreen.TableName),
+            automaticallyImplyLeading: false,
           )),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -389,94 +394,137 @@ class _TableScreenState extends State<TableScreen> {
                   color: Colors.yellow,
                   width: data.size.width / 3.2,
                   height: data.size.height / 4,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
                     children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: MaterialButton(
-                          minWidth: data.size.width / 9.2,
-                          color: Colors.blue,
-                          onPressed: () async {
-                            for (var msg in tableitems) {
-                              await database
-                                  .collection(TableScreen.TableName)
-                                  .insert(
-                                data: {
-                                  'name': msg.description,
-                                  'price': msg.Price,
-                                  'qtt': msg.qtt,
-                                  'get': 'yes',
-                                },
-                              );
-                            }
-                            MainScreen.ListOfTable[TableScreen.indexx]
-                                ['iswaiting'] = true;
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('Waiting'),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: MaterialButton(
-                          minWidth: data.size.width / 9.2,
-                          color: Colors.blue,
-                          onPressed: () async {
-                            print(MainScreen.ListOfTable);
-                            for (var i in MainScreen.ListOfTable) {
-                              if ('Table ${i['numb']}' ==
-                                  TableScreen.TableName) {
-                                print(i['iswaiting']);
-                                setState(() {
-                                  i['iswaiting'] = false;
-                                });
-                              }
-                            }
-                            print(MainScreen.ListOfTable);
-                            var posturl =
-                                'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
-                            var postlist = [];
-                            for (var i in tableitems) {
-                              setState(() {
-                                postlist.add({
-                                  "mapValue": {
-                                    "fields": {
-                                      "qtt": {"doubleValue": "${i.qtt}"},
-                                      "price": {"doubleValue": "${i.Price}"},
-                                      "name": {
-                                        "stringValue": "${i.description}"
-                                      },
-                                      "totalprice": {
-                                        "doubleValue": "${i.qtt * i.Price}"
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: MaterialButton(
+                              minWidth: data.size.width / 9.2,
+                              color: Colors.blue,
+                              onPressed: () async {
+                                for (var msg in tableitems) {
+                                  await database
+                                      .collection(TableScreen.TableName)
+                                      .insert(
+                                    data: {
+                                      'name': msg.description,
+                                      'price': msg.Price,
+                                      'qtt': msg.qtt,
+                                      'get': 'yes',
+                                    },
+                                  );
+                                }
+                                MainScreen.ListOfTable[TableScreen.indexx]
+                                    ['iswaiting'] = true;
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Waiting'),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: MaterialButton(
+                              minWidth: data.size.width / 9.2,
+                              color: Colors.blue,
+                              onPressed: () async {
+                                print(MainScreen.ListOfTable);
+                                for (var i in MainScreen.ListOfTable) {
+                                  if ('Table ${i['numb']}' ==
+                                      TableScreen.TableName) {
+                                    print(i['iswaiting']);
+                                    setState(() {
+                                      i['iswaiting'] = false;
+                                    });
+                                  }
+                                }
+                                print(MainScreen.ListOfTable);
+                                var posturl =
+                                    'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
+                                var postlist = [];
+                                for (var i in tableitems) {
+                                  setState(() {
+                                    postlist.add({
+                                      "mapValue": {
+                                        "fields": {
+                                          "qtt": {"doubleValue": "${i.qtt}"},
+                                          "price": {"doubleValue": "${i.Price}"},
+                                          "name": {
+                                            "stringValue": "${i.description}"
+                                          },
+                                          "totalprice": {
+                                            "doubleValue": "${i.qtt * i.Price}"
+                                          }
+                                        }
                                       }
+                                    });
+                                  });
+                                }
+                                print(postlist);
+
+                                var bodypost = jsonEncode({
+                                  "fields": {
+                                    "billnum": {"stringValue": "${MainScreen.alltrans.length + 1}"},
+                                    "tablename": {"stringValue": "1"},
+                                    "total": {"doubleValue": total},
+                                    "items": {
+                                      "arrayValue": {"values": postlist}
                                     }
                                   }
                                 });
-                              });
-                            }
-                            print(postlist);
-
-                            var bodypost = jsonEncode({
-                              "fields": {
-                                "billnum": {"stringValue": "${MainScreen.alltrans.length + 1}"},
-                                "tablename": {"stringValue": "1"},
-                                "total": {"doubleValue": total},
-                                "items": {
-                                  "arrayValue": {"values": postlist}
-                                }
-                              }
-                            });
-                            print(postlist);
-                            print(bodypost);
-                            await http.post(posturl, body: bodypost);
-                            getalltransaction();
+                                print(postlist);
+                                print(bodypost);
+                                await http.post(posturl, body: bodypost);
+                                getalltransaction();
 
 
-                          },
-                          child: Text('Submit'),
-                        ),
+                              },
+                              child: Text('Submit'),
+                            ),
+                          ),
+
+                        ],
+                      ),
+                      Row(crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: MaterialButton(
+                              minWidth: data.size.width / 9.2,
+                              color: Colors.blue,
+                              onPressed: () async {
+
+                                Navigator.of(context).pop();
+                              },
+                              child: Text('Cancel Table'),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: MaterialButton(
+                              minWidth: data.size.width / 9.2,
+                              color: Colors.blue,
+                              onPressed: () async {
+
+
+                              },
+                              child: Text('Print'),
+                            ),
+                          )
+                        ],
+                      ),
+                      MaterialButton(
+                          child: Text('print test'),
+                          onPressed: () {
+                            print(tableitems);
+                            Printing.layoutPdf(onLayout: buildPdf);
+
+
+                          }
                       ),
                     ],
                   ),
@@ -496,4 +544,35 @@ class trans {
   double qtt;
   double totalprice;
   trans(this.description, this.Price, this.qtt, this.totalprice);
+}
+List<int> buildPdf(PdfPageFormat format) {
+  final pdf.Document doc = pdf.Document();
+
+  doc.addPage(
+    pdf.Page(
+      pageFormat:PdfPageFormat.a4,
+      build: (pdf.Context context) {
+        return pdf.ConstrainedBox(
+          constraints: const pdf.BoxConstraints.expand(),
+          child: pdf.FittedBox(
+            child: pdf.Column(
+              children: [
+                pdf.Text('caffe'),
+                pdf.ListView.builder(itemBuilder: (context,index){
+                return pdf.Text(tableitems[index].description);
+                },
+
+
+                itemCount: tableitems.length),
+              ]
+            ),
+          ),
+        );
+
+      },
+
+    ),
+  );
+
+  return doc.save();
 }

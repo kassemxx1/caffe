@@ -25,7 +25,7 @@ class _ReportScreenState extends State<ReportScreen> {
   var endDate = new DateTime(year, month, day, 23, 59, 59, 99, 99);
   var DayTransaction=[];
   var transactiondate=[];
-  Map<String,dynamic> items;
+  var items=[];
   bool sort;
 
   onSortColum(int columnIndex, bool ascending) {
@@ -38,16 +38,32 @@ class _ReportScreenState extends State<ReportScreen> {
     }
   }
   void getItems(String numb){
-
+var itemlist;
     for(var msg in MainScreen.alltrans){
       if(msg['billnum']==numb){
         setState(() {
-          items = jsonDecode(msg['items']);
+          itemlist = jsonDecode(msg['items']);
         });
-        print(items);
+        items.clear();
+        for (var msg in itemlist['arrayValue']['values']){
+          final name = msg['mapValue']['fields']['name']['stringValue'];
+          final total=msg['mapValue']['fields']['totalprice']['doubleValue'];
+          final qtt=msg['mapValue']['fields']['qtt']['doubleValue'];
+          final price=msg['mapValue']['fields']['price']['doubleValue'];
+          setState(() {
+            items.add({
+              'name':name,
+              'total':total,
+              'qtt':qtt,
+              'price':price,
+            });
+          });
+        }
+
       }
 
     }
+    print(items);
   }
   void gettransationdate(DateTime startDate ,DateTime endDate){
     transactiondate.clear();
@@ -287,19 +303,37 @@ class _ReportScreenState extends State<ReportScreen> {
                           '${transDate.numb}',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        onPressed: (){
-                          getItems(transDate.numb);
+                        onPressed: ()async{
+                         await getItems(transDate.numb);
                           showDialog(context: context,
                           builder: (BuildContext context){
-                            return AlertDialog(
-                              content: Card(
-                                child: Column(
-                                  children: <Widget>[
+                            return StatefulBuilder(
+                              builder: (context,setstate) {
+                                return AlertDialog(
+                                  content: Container(
+                                    height: 500,
+                                    width: 400,
+                                    child: Card(
+                                      child: ListView.builder(
+                                        itemCount: items.length,
+                                          itemBuilder: (context, index) {
+                                            return Row(
+                                              children: <Widget>[
+                                                Text('${items[index]['name']}'),
+                                                Text('${items[index]['price']}'),
+                                                Text('${items[index]['qtt']}'),
+                                                Text('${items[index]['total']}'),
+                                              ],
+                                            );
+                                          }
 
 
-                                  ],
-                                ),
-                              ),
+                                      ),
+
+                                    ),
+                                  ),
+                                );
+                              }
                             );
                           }
                           );
