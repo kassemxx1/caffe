@@ -1,10 +1,10 @@
 import 'dart:convert';
-
 import 'package:database/database.dart';
 import 'package:flutter/material.dart';
 import 'package:date_format/date_format.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:http/http.dart' as http;
+
 import 'Main_Screen.dart';
 
 
@@ -20,6 +20,7 @@ class ReportScreen extends StatefulWidget {
 }
 
 class _ReportScreenState extends State<ReportScreen> {
+  var today = new DateTime(year, month, day, 0, 0, 0, 0, 0);
   var tomorow = new DateTime(year, month, day, 23, 59, 59, 99, 99);
   var startDate = DateTime(year, month, day, 0, 0, 0, 0, 0);
   var endDate = new DateTime(year, month, day, 23, 59, 59, 99, 99);
@@ -130,7 +131,7 @@ var itemlist;
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text('start Date:',style: TextStyle(fontSize: 35*data.size.width/2000,color: Colors.black),),
+                        Text('start Date:',style: TextStyle(fontSize: 35*data.size.width/1500,color: Colors.black),),
                         FlatButton(
                             onPressed: () {
                               DatePicker.showDatePicker(context,
@@ -141,7 +142,6 @@ var itemlist;
                                     setState(() {
                                       startDate = new DateTime(date.year,date.month,date.day,0,0,0);
                                     });
-                                    print(startDate);
                                     gettransationdate(startDate, endDate);
                                   },
                                   currentTime: DateTime.now(),
@@ -155,13 +155,13 @@ var itemlist;
                                 '-',
                                 dd
                               ])}',
-                              style: TextStyle(color: Colors.blue,fontSize:35*data.size.width/1920.0),
+                              style: TextStyle(color: Colors.blue,fontSize:35*data.size.width/1500.0,fontWeight: FontWeight.bold),
                             )),
                       ],
                     ),
                     Row(
                       children: <Widget>[
-                        Text('End Date:',style: TextStyle(fontSize: 35*data.size.width/1920.0,color: Colors.black)),
+                        Text('End Date:',style: TextStyle(fontSize: 35*data.size.width/1500.0,color: Colors.black)),
                         FlatButton(
                             onPressed: () {
                               DatePicker.showDatePicker(context,
@@ -186,36 +186,19 @@ var itemlist;
                                 '-',
                                 dd
                               ])}',
-                              style: TextStyle(color: Colors.blue,fontSize: 35*data.size.width/1920.0),
+                              style: TextStyle(color: Colors.blue,fontSize: 35*data.size.width/1500.0,fontWeight: FontWeight.bold),
                             )),
                       ],
                     ),
                   ],
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text('Daily',style: TextStyle(fontSize: 35*data.size.width/2000,fontWeight: FontWeight.bold,),),
-                    FutureBuilder(
-                        builder:
-                            (BuildContext context, AsyncSnapshot<double> qttnumbr) {
-                          return Center(
-                            child: Text(
-                              'Tolal  : ${qttnumbr.data} L.L',
-                              style: TextStyle(color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 35*data.size.width/2000),
-                            ),
-                          );
-                        },
-                        initialData: 1.0,
-                        future:getalltransactiondate(startDate, tomorow)),
-                  ],
+                SizedBox(
+                  height: 50,
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text('Between Date',style: TextStyle(fontSize: 35*data.size.width/2000,fontWeight: FontWeight.bold,),),
+                    Text('Daily',style: TextStyle(fontSize: 35*data.size.width/1500,fontWeight: FontWeight.bold,),),
                     FutureBuilder(
                         builder:
                             (BuildContext context, AsyncSnapshot<double> qttnumbr) {
@@ -224,7 +207,30 @@ var itemlist;
                               'Tolal  : ${qttnumbr.data} L.L',
                               style: TextStyle(color: Colors.black,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 35*data.size.width/2000),
+                                  fontSize: 35*data.size.width/1500),
+                            ),
+                          );
+                        },
+                        initialData: 1.0,
+                        future:getalltransactiondate(today, tomorow)),
+                  ],
+                ),
+                SizedBox(
+                  height: 50,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text('Between Date',style: TextStyle(fontSize: 35*data.size.width/1500,fontWeight: FontWeight.bold,),),
+                    FutureBuilder(
+                        builder:
+                            (BuildContext context, AsyncSnapshot<double> qttnumbr) {
+                          return Center(
+                            child: Text(
+                              'Tolal  : ${qttnumbr.data} L.L',
+                              style: TextStyle(color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 35*data.size.width/1500),
                             ),
                           );
                         },
@@ -301,7 +307,7 @@ var itemlist;
                       DataCell(MaterialButton(
                         child: Text(
                           '${transDate.numb}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.blue),
                         ),
                         onPressed: ()async{
                          await getItems(transDate.numb);

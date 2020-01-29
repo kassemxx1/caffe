@@ -10,6 +10,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pdf;
 import 'package:printing/printing.dart';
 
+
 var now = new DateTime.now();
 int day = now.day;
 int year = now.year;
@@ -70,15 +71,16 @@ class _TableScreenState extends State<TableScreen> {
 //      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
 //    });
     Navigator.of(context).pop();
-    print(MainScreen.alltrans);
+
   }
   void getwaiting(String tablename) async {
+    tableitems.clear();
     final response = await database.collection(TableScreen.TableName).search(
           query: Query.parse(
             "get:(yes)",
           ),
         );
-    tableitems.clear();
+
     for (var msg in response.snapshots) {
       final name = msg.data['name'];
       final price = msg.data['price'];
@@ -154,6 +156,7 @@ class _TableScreenState extends State<TableScreen> {
   @override
   void initState() {
     super.initState();
+    tableitems.clear();
     getwaiting(TableScreen.TableName);
 //    getcat();
   }
@@ -173,6 +176,9 @@ class _TableScreenState extends State<TableScreen> {
         children: <Widget>[
           Column(
             children: <Widget>[
+
+
+              ///////////////////////items li a5adon
               Container(
                   width: data.size.width * 2 / 3.01,
                   height: (data.size.height - heightofAppbar) * 1.4 / 3,
@@ -264,7 +270,17 @@ class _TableScreenState extends State<TableScreen> {
                                               ),
                                               MaterialButton(
                                                   child: Text('Yes'),
-                                                  onPressed: () async {}),
+                                                  onPressed: ()  {
+                                                    for (var i in tableitems){
+                                                      if (trans.description==i.description){
+                                                        setState(() {
+                                                          tableitems.remove(i);
+                                                        });
+                                                        Navigator.of(context).pop();
+                                                      }
+                                                    }
+
+                                                  }),
                                             ],
                                           );
                                         });
@@ -274,33 +290,10 @@ class _TableScreenState extends State<TableScreen> {
                           .toList(),
                     ),
                   )
-
-//                ListView.builder(
-//                  itemBuilder: ((BuildContext, index) {
-//                    return GestureDetector(
-//                      child: ListTile(
-//                        enabled: true,
-//                        title: Row(
-//                          children: <Widget>[
-//                            Text(
-//                                '${index+1}'),
-//                            Text(
-//                                '${tableitems[index]['name']}'),
-//                            Container(
-//                              width: 50,
-//                            ),
-//                            Text(
-//                                '${tableitems[index]['price']}L.L'),
-//                          ],
-//                        ),
-//                      ),
-//                      onTap: () {
-//                      },
-//                    );
-//                  }),
-//                  itemCount: tableitems.length,
-//                ),
                   ),
+
+
+              /////////////////////////////////////////////////////// totalllllll
               Container(
                   width: data.size.width * 2 / 3.01,
                   height: (data.size.height - heightofAppbar) * 0.2 / 3,
@@ -317,6 +310,8 @@ class _TableScreenState extends State<TableScreen> {
                     initialData: 0.0,
                     future: sumtotal(),
                   )),
+
+              //////////////items li mne5taron
               ModalProgressHUD(
                 inAsyncCall: _saving,
                 child: Container(
@@ -351,13 +346,6 @@ class _TableScreenState extends State<TableScreen> {
                                     .ListOfSubCategories[index]['price'])));
                           });
 
-//                          setState(() {
-//                            var count = tableitems.length;
-//                            tableitems.add({
-//                              'name': TableScreen.ListOfSubCategories[index]['name'],
-//                              'price': double.parse(TableScreen.ListOfSubCategories[index]['price']),
-//                            });
-//                          });
                           sumtotal();
                         },
                       );
@@ -368,8 +356,11 @@ class _TableScreenState extends State<TableScreen> {
               ),
             ],
           ),
+
           Column(
             children: <Widget>[
+
+              /////////////////////contnar l categori
               Container(
                 width: data.size.width / 3.2,
                 height: data.size.height * 2 / 3.5,
@@ -388,6 +379,7 @@ class _TableScreenState extends State<TableScreen> {
                   itemCount: TableScreen.AllItems.length,
                 ),
               ),
+
               Padding(
                 padding: const EdgeInsets.all(2.0),
                 child: Container(
@@ -400,6 +392,9 @@ class _TableScreenState extends State<TableScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
+
+
+                          ///////////////waitin button
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: MaterialButton(
@@ -420,11 +415,13 @@ class _TableScreenState extends State<TableScreen> {
                                 }
                                 MainScreen.ListOfTable[TableScreen.indexx]
                                     ['iswaiting'] = true;
+                                tableitems.clear();
                                 Navigator.of(context).pop();
                               },
                               child: Text('Waiting'),
                             ),
                           ),
+                          /////// submut button
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: MaterialButton(
@@ -463,7 +460,6 @@ class _TableScreenState extends State<TableScreen> {
                                     });
                                   });
                                 }
-                                print(postlist);
 
                                 var bodypost = jsonEncode({
                                   "fields": {
@@ -475,10 +471,9 @@ class _TableScreenState extends State<TableScreen> {
                                     }
                                   }
                                 });
-                                print(postlist);
-                                print(bodypost);
                                 await http.post(posturl, body: bodypost);
                                 getalltransaction();
+                             await  Printing.layoutPdf(onLayout: buildPdf);
 
 
                               },
@@ -491,24 +486,38 @@ class _TableScreenState extends State<TableScreen> {
                       Row(crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
+                          //////////////waiting button
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: MaterialButton(
                               minWidth: data.size.width / 9.2,
                               color: Colors.blue,
                               onPressed: () async {
-
+                                for (var i in MainScreen.ListOfTable) {
+                                  setState(() {
+                                    tableitems.clear();
+                                  });
+                                  if ('Table ${i['numb']}' ==
+                                      TableScreen.TableName) {
+                                    print(i['iswaiting']);
+                                    setState(() {
+                                      i['iswaiting'] = false;
+                                    });
+                                  }
+                                }
                                 Navigator.of(context).pop();
                               },
                               child: Text('Cancel Table'),
                             ),
                           ),
+                          ////print button
                           Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: MaterialButton(
                               minWidth: data.size.width / 9.2,
                               color: Colors.blue,
                               onPressed: () async {
+                                Printing.layoutPdf(onLayout: buildPdf);
 
 
                               },
@@ -517,15 +526,7 @@ class _TableScreenState extends State<TableScreen> {
                           )
                         ],
                       ),
-                      MaterialButton(
-                          child: Text('print test'),
-                          onPressed: () {
-                            print(tableitems);
-                            Printing.layoutPdf(onLayout: buildPdf);
 
-
-                          }
-                      ),
                     ],
                   ),
                 ),
@@ -550,16 +551,27 @@ List<int> buildPdf(PdfPageFormat format) {
 
   doc.addPage(
     pdf.Page(
-      pageFormat:PdfPageFormat.a4,
+      pageFormat:PdfPageFormat(8 * PdfPageFormat.cm, 20 * PdfPageFormat.cm, marginAll: 0.5 * PdfPageFormat.cm),
       build: (pdf.Context context) {
         return pdf.ConstrainedBox(
           constraints: const pdf.BoxConstraints.expand(),
           child: pdf.FittedBox(
             child: pdf.Column(
               children: [
-                pdf.Text('caffe'),
                 pdf.ListView.builder(itemBuilder: (context,index){
-                return pdf.Text(tableitems[index].description);
+                return pdf.Row(
+                  children: [
+                pdf.Text(tableitems[index].description),
+                  pdf.SizedBox(
+                    width: 1
+                  ),
+                    pdf.Text('${tableitems[index].qtt}'),
+                    pdf.SizedBox(
+                        width: 1
+                    ),
+                    pdf.Text('${tableitems[index].totalprice}'),
+                  ]
+                );
                 },
 
 
@@ -575,4 +587,5 @@ List<int> buildPdf(PdfPageFormat format) {
   );
 
   return doc.save();
+
 }
