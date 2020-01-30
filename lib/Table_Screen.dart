@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:caffe/Main_Screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_counter/flutter_counter.dart';
@@ -9,6 +10,9 @@ import 'package:pdf/pdf.dart';
 
 import 'package:pdf/widgets.dart' as pdf;
 import 'package:printing/printing.dart';
+
+
+
 
 
 var now = new DateTime.now();
@@ -156,7 +160,6 @@ class _TableScreenState extends State<TableScreen> {
   @override
   void initState() {
     super.initState();
-    tableitems.clear();
     getwaiting(TableScreen.TableName);
 //    getcat();
   }
@@ -165,12 +168,11 @@ class _TableScreenState extends State<TableScreen> {
   Widget build(BuildContext context) {
     final data = MediaQuery.of(context);
     return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: Size.fromHeight(heightofAppbar),
-          child: AppBar(
+      appBar: AppBar(
             title: Text(TableScreen.TableName),
             automaticallyImplyLeading: false,
-          )),
+        backgroundColor: Colors.grey,
+          ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -182,7 +184,10 @@ class _TableScreenState extends State<TableScreen> {
               Container(
                   width: data.size.width * 2 / 3.01,
                   height: (data.size.height - heightofAppbar) * 1.4 / 3,
-                  color: Colors.blue,
+
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blueAccent)
+                  ),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: DataTable(
@@ -297,13 +302,16 @@ class _TableScreenState extends State<TableScreen> {
               Container(
                   width: data.size.width * 2 / 3.01,
                   height: (data.size.height - heightofAppbar) * 0.2 / 3,
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.blueAccent)
+                  ),
                   child: FutureBuilder(
                     builder:
                         (BuildContext context, AsyncSnapshot<double> qttnumbr) {
                       return Center(
                         child: Text(
                           'Total : ${qttnumbr.data}',
-                          style: TextStyle(color: Colors.black),
+                          style: TextStyle(color: Colors.black,fontSize: 25),
                         ),
                       );
                     },
@@ -377,6 +385,7 @@ class _TableScreenState extends State<TableScreen> {
                     );
                   }),
                   itemCount: TableScreen.AllItems.length,
+
                 ),
               ),
 
@@ -473,7 +482,7 @@ class _TableScreenState extends State<TableScreen> {
                                 });
                                 await http.post(posturl, body: bodypost);
                                 getalltransaction();
-                             await  Printing.layoutPdf(onLayout: buildPdf);
+                                 await  Printing.layoutPdf(onLayout: buildPdf);
 
 
                               },
@@ -551,33 +560,51 @@ List<int> buildPdf(PdfPageFormat format) {
 
   doc.addPage(
     pdf.Page(
-      pageFormat:PdfPageFormat(8 * PdfPageFormat.cm, 20 * PdfPageFormat.cm, marginAll: 0.5 * PdfPageFormat.cm),
+      pageFormat:PdfPageFormat(50* PDFPageFormat.MM,100.0 * PDFPageFormat.MM),
       build: (pdf.Context context) {
         return pdf.ConstrainedBox(
           constraints: const pdf.BoxConstraints.expand(),
           child: pdf.FittedBox(
-            child: pdf.Column(
+            child:pdf.Center(
+                child: pdf.Column(
               children: [
-                pdf.ListView.builder(itemBuilder: (context,index){
-                return pdf.Row(
-                  children: [
-                pdf.Text(tableitems[index].description),
-                  pdf.SizedBox(
-                    width: 1
-                  ),
-                    pdf.Text('${tableitems[index].qtt}'),
-                    pdf.SizedBox(
-                        width: 1
-                    ),
-                    pdf.Text('${tableitems[index].totalprice}'),
-                  ]
-                );
-                },
+                pdf.Text('caffe'),
+                pdf.Text('phone number'),
+                pdf.Text('adress: Nabatieh '),
+                pdf.SizedBox(
+                    height:30
+                ),
+                  pdf.ListView.builder(itemBuilder: (context,index){
+                    return pdf.Row(
+                        children: [
+                          pdf.Text(tableitems[index].description),
+                          pdf.SizedBox(
+                              width:10
+                          ),
+                          pdf.Text('${tableitems[index].Price}'),
+                          pdf.SizedBox(
+                              width: 10
+                          ),
+                          pdf.Text('${tableitems[index].qtt}'),
+                          pdf.SizedBox(
+                              width: 10
+                          ),
+                          pdf.Text('${tableitems[index].totalprice}'),
+                        ]
+                    );
+                  },
 
 
-                itemCount: tableitems.length),
+                      itemCount: tableitems.length),
+
+
+
               ]
             ),
+
+
+        ),
+
           ),
         );
 
