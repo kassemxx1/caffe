@@ -365,7 +365,7 @@ class _MainScreenState extends State<MainScreen> {
         appBar: AppBar(
           title: Center(
             child: Text(
-              'Caffe',
+              ' Sparrow Caffe',
               style: TextStyle(color: Colors.black),
             ),
           ),

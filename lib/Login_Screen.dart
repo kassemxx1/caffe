@@ -48,77 +48,158 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final data = MediaQuery.of(context);
     return Scaffold(
-      body: Container(
+      body: LayoutBuilder(
+        builder: (context ,constraints){
+          if(constraints.maxWidth > 600){
+            return new Container(
 //          decoration: BoxDecoration(
 //              image: DecorationImage(
 //                  image: AssetImage("assets/images/pirate.jpg"), fit: BoxFit.fill)),
-      color: Colors.grey,
-       child: Center(
-         child: Container(
+                color: Colors.grey,
+                child: Center(
 
-           width: data.size.width/3,
-           height:data.size.height/3,
-           child: Card(
-             color: Colors.white.withOpacity(.5),
-             elevation: 40,
+                    child: Card(
+                      color: Colors.white.withOpacity(.5),
+                      elevation: 40,
 
-             borderOnForeground: true,
-             child: Center(
-               child: Padding(
-                 padding: const EdgeInsets.all(20.0),
-                 child: Column(
-                   crossAxisAlignment: CrossAxisAlignment.center,
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: <Widget>[
-                     Text(
-                       'Enter Your Password',
-                       style: TextStyle(
-                         color: Colors.black,
-                         fontSize: 25,
+                      borderOnForeground: true,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Text(
+                                'Welcome To Sparrow Caffe',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 25,
 
-                       ),
-                     ),
-                     TextField(
-                       controller: _textEditingController1,
-                       keyboardType: TextInputType.emailAddress,
-                       textAlign: TextAlign.center,
-                       onChanged: (value) {
-                         setState(() {
-                           password=value;
+                                ),
+                              ),
+                              Text(
+                                'Enter Your Password',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 25,
 
-                         });
-                       },
-                       obscureText: true,
-                       decoration:
-                       KTextFieldImputDecoration.copyWith(
-                           hintText:
-                           'Enter Your Password'),
-                     ),
-                       Center(
-                         child:MaterialButton(
-                           color: Colors.blue,
-                           onPressed: (){
-                             for(var pass in listPassword){
-                               if (password==pass['password']){
+                                ),
+                              ),
+                              TextField(
+                                controller: _textEditingController1,
+                                keyboardType: TextInputType.emailAddress,
+                                textAlign: TextAlign.center,
+                                onChanged: (value) {
+                                  setState(() {
+                                    password=value;
 
-
-                                 Navigator.pushNamed(context,MainScreen.id);
-                               }
-                             }
-                           },
-                           child: Text('Login'),
-                         )
-                       ),
+                                  });
+                                },
+                                obscureText: true,
+                                decoration:
+                                KTextFieldImputDecoration.copyWith(
+                                    hintText:
+                                    'Enter Your Password'),
+                              ),
+                              Center(
+                                  child:MaterialButton(
+                                    color: Colors.blue,
+                                    onPressed: (){
+                                      for(var pass in listPassword){
+                                        if (password==pass['password']){
 
 
-                   ],
-                 ),
-               ),
-             ),
-           ),
-         ),
-       )
-      ),
+                                          Navigator.pushNamed(context,MainScreen.id);
+                                        }
+                                      }
+                                    },
+                                    child: Text('Login'),
+                                  )
+                              ),
+
+
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                )
+            );
+          }
+          else{
+            return  Container(
+              child: Center(
+                  child: Card(
+                    color: Colors.white.withOpacity(.5),
+                    elevation: 40,
+                    borderOnForeground: true,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              'Welcome To Sparrow Caffe',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+
+                              ),
+                            ),
+                            Text(
+                              'Enter Your Password',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+
+                              ),
+                            ),
+                            TextField(
+                              controller: _textEditingController1,
+                              keyboardType: TextInputType.emailAddress,
+                              textAlign: TextAlign.center,
+                              onChanged: (value) {
+                                setState(() {
+                                  password=value;
+
+                                });
+                              },
+                              obscureText: true,
+                              decoration:
+                              KTextFieldImputDecoration.copyWith(
+                                  hintText:
+                                  'Enter Your Password'),
+                            ),
+                            Center(
+                                child:MaterialButton(
+                                  color: Colors.blue,
+                                  onPressed: (){
+                                    for(var pass in listPassword){
+                                      if (password==pass['password']){
+                                        Navigator.pushNamed(context,MainScreen.id);
+                                      }
+                                    }
+                                  },
+                                  child: Text('Login'),
+                                )
+                            ),
+
+
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+              ),
+            );
+          }
+        },
+      )
     );
   }
 }

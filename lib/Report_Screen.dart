@@ -121,7 +121,7 @@ var itemlist;
         children: <Widget>[
           Container(
             height: data.size.height/3,
-            color: Colors.green,
+            color: Colors.brown[100],
 
             child: Column(
               children: <Widget>[
@@ -242,6 +242,7 @@ var itemlist;
             ),
           ),
           Container(
+
             height: data.size.height *1.5 /3,
             child: SingleChildScrollView(
               scrollDirection: Axis.vertical,

@@ -11,16 +11,13 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pdf;
 import 'package:printing/printing.dart';
 
-
-
-
-
 var now = new DateTime.now();
 int day = now.day;
 int year = now.year;
 int month = now.month;
 final database = MemoryDatabase();
 List<trans> tableitems = [];
+var total = 0.0;
 class TableScreen extends StatefulWidget {
   static const String id = 'Table_Screen';
   static var AllItems = [];
@@ -33,20 +30,12 @@ class TableScreen extends StatefulWidget {
 }
 
 class _TableScreenState extends State<TableScreen> {
-
   double heightofAppbar = 80.0;
-  var total = 0.0;
+
   final pdf.Document doc = pdf.Document();
   bool _saving = false;
   var Listcat = [];
-  var subcat = [
-    {
-      'cat': 'Juice',
-      'name': 'Orange',
-      'price': 4000,
-    }
-  ];
-  void getalltransaction()async{
+  void getalltransaction() async {
     var url =
         'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
     var response = await http.get(url);
@@ -54,29 +43,27 @@ class _TableScreenState extends State<TableScreen> {
     MainScreen.alltrans.clear();
     for (var msg in data["documents"]) {
       final numb = msg["fields"]["billnum"]["stringValue"];
-      final tablename=msg["fields"]["tablename"]["stringValue"];
-      final total=msg["fields"]["total"]["doubleValue"].toDouble();
+      final tablename = msg["fields"]["tablename"]["stringValue"];
+      final total = msg["fields"]["total"]["doubleValue"].toDouble();
       final time = DateTime.parse(msg["createTime"]);
-      final items= msg["fields"]["items"];
+      final items = msg["fields"]["items"];
 
       setState(() {
         MainScreen.alltrans.add({
-          'billnum':numb,
-          'tablename':tablename,
-          'total':total,
-          'timestamp':time,
-          'items':jsonEncode(items),
+          'billnum': numb,
+          'tablename': tablename,
+          'total': total,
+          'timestamp': time,
+          'items': jsonEncode(items),
         });
       });
-
-
     }
 //    MainScreen.alltrans.sort((a, b) {
 //      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
 //    });
     Navigator.of(context).pop();
-
   }
+
   void getwaiting(String tablename) async {
     tableitems.clear();
     final response = await database.collection(TableScreen.TableName).search(
@@ -133,6 +120,7 @@ class _TableScreenState extends State<TableScreen> {
       print(e);
     }
   }
+
   Future<double> sumtotal() async {
     var qtts = [0.0];
     for (var i in tableitems) {
@@ -147,6 +135,7 @@ class _TableScreenState extends State<TableScreen> {
     });
     return new Future(() => result);
   }
+
   void adddocument() async {
     var posturl =
         'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/categories';
@@ -157,11 +146,12 @@ class _TableScreenState extends State<TableScreen> {
     });
     await http.post(posturl, body: bodypost);
   }
+
   @override
   void initState() {
     super.initState();
     getwaiting(TableScreen.TableName);
-//    getcat();
+
   }
 
   @override
@@ -169,25 +159,21 @@ class _TableScreenState extends State<TableScreen> {
     final data = MediaQuery.of(context);
     return Scaffold(
       appBar: AppBar(
-            title: Text(TableScreen.TableName),
-            automaticallyImplyLeading: false,
-        backgroundColor: Colors.grey,
-          ),
+        title: Text(TableScreen.TableName),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.blueAccent,
+      ),
       body: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Column(
             children: <Widget>[
-
-
               ///////////////////////items li a5adon
               Container(
                   width: data.size.width * 2 / 3.01,
                   height: (data.size.height - heightofAppbar) * 1.4 / 3,
-
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blueAccent)
-                  ),
+                  decoration:
+                      BoxDecoration(border: Border.all(color: Colors.brown)),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
                     child: DataTable(
@@ -275,16 +261,17 @@ class _TableScreenState extends State<TableScreen> {
                                               ),
                                               MaterialButton(
                                                   child: Text('Yes'),
-                                                  onPressed: ()  {
-                                                    for (var i in tableitems){
-                                                      if (trans.description==i.description){
+                                                  onPressed: () {
+                                                    for (var i in tableitems) {
+                                                      if (trans.description ==
+                                                          i.description) {
                                                         setState(() {
                                                           tableitems.remove(i);
                                                         });
-                                                        Navigator.of(context).pop();
+                                                        Navigator.of(context)
+                                                            .pop();
                                                       }
                                                     }
-
                                                   }),
                                             ],
                                           );
@@ -294,24 +281,21 @@ class _TableScreenState extends State<TableScreen> {
                               ]))
                           .toList(),
                     ),
-                  )
-                  ),
-
+                  )),
 
               /////////////////////////////////////////////////////// totalllllll
               Container(
                   width: data.size.width * 2 / 3.01,
                   height: (data.size.height - heightofAppbar) * 0.2 / 3,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blueAccent)
-                  ),
+                  decoration:
+                      BoxDecoration(border: Border.all(color: Colors.brown)),
                   child: FutureBuilder(
                     builder:
                         (BuildContext context, AsyncSnapshot<double> qttnumbr) {
                       return Center(
                         child: Text(
                           'Total : ${qttnumbr.data}',
-                          style: TextStyle(color: Colors.black,fontSize: 25),
+                          style: TextStyle(color: Colors.black, fontSize: 25),
                         ),
                       );
                     },
@@ -325,87 +309,114 @@ class _TableScreenState extends State<TableScreen> {
                 child: Container(
                   width: data.size.width * 2 / 3,
                   height: (data.size.height - heightofAppbar) * 1.4 / 3,
-                  color: Colors.green,
-                  child: ListView.builder(
-                    itemBuilder: ((BuildContext, index) {
-                      return GestureDetector(
-                        child: ListTile(
-                          enabled: true,
-                          title: Row(
-                            children: <Widget>[
-                              Text(
-                                  '${TableScreen.ListOfSubCategories[index]['name']}'),
-                              Container(
-                                width: 50,
-                              ),
-                              Text(
-                                  '${TableScreen.ListOfSubCategories[index]['price']}L.L'),
-                            ],
+                  decoration:
+                      BoxDecoration(border: Border.all(color: Colors.brown)),
+                  child: CustomScrollView(
+                    slivers: <Widget>[
+                      SliverGrid(
+                          delegate: SliverChildBuilderDelegate(
+                            (BuildContext context, int index) {
+                              return Padding(
+                                padding: EdgeInsets.all(5.0),
+                                child: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        tableitems.add(trans(
+                                            TableScreen
+                                                    .ListOfSubCategories[index]
+                                                ['name'],
+                                            double.parse(TableScreen
+                                                    .ListOfSubCategories[index]
+                                                ['price']),
+                                            1.0,
+                                            double.parse(TableScreen
+                                                    .ListOfSubCategories[index]
+                                                ['price'])));
+                                      });
+                                      sumtotal();
+                                    },
+                                    child: Card(
+                                        elevation: 20.0,
+                                        color: Colors.blueAccent,
+                                        child: Center(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: <Widget>[
+                                              Text(
+                                                  '${TableScreen.ListOfSubCategories[index]['name']}',style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor*20,color: Colors.brown[100]),),
+                                              SizedBox(
+                                                height: 20,
+                                              ),
+                                              Text(
+                                                  '${TableScreen.ListOfSubCategories[index]['price']}L.L',style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor*20,color: Colors.brown[100])),
+                                            ],
+                                          ),
+                                        ))),
+                              );
+                            },
+                            childCount: TableScreen.ListOfSubCategories.length,
                           ),
-                        ),
-                        onTap: () async {
-                          setState(() {
-                            tableitems.add(trans(
-                                TableScreen.ListOfSubCategories[index]['name'],
-                                double.parse(TableScreen
-                                    .ListOfSubCategories[index]['price']),
-                                1.0,
-                                double.parse(TableScreen
-                                    .ListOfSubCategories[index]['price'])));
-                          });
-
-                          sumtotal();
-                        },
-                      );
-                    }),
-                    itemCount: TableScreen.ListOfSubCategories.length,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            ///no.of items in the horizontal axis
+                            crossAxisCount: (data.size.width / 250.0).round(),
+                          ))
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-
           Column(
             children: <Widget>[
-
               /////////////////////contnar l categori
               Container(
-                width: data.size.width / 3.2,
-                height: data.size.height * 2 / 3.5,
-                child: ListView.builder(
-                  itemBuilder: ((BuildContext, index) {
-                    return GestureDetector(
-                      child: ListTile(
-                        title: Text('${TableScreen.AllItems[index]['name']}'),
-                      ),
-                      onTap: () {
-                        TableScreen.ListOfSubCategories.clear();
-                        getsub(TableScreen.AllItems[index]['name']);
-                      },
-                    );
-                  }),
-                  itemCount: TableScreen.AllItems.length,
-
-                ),
-              ),
+                  width: data.size.width / 3.2,
+                  height: data.size.height * 2 / 3.5,
+                  child: CustomScrollView(
+                    slivers: <Widget>[
+                      SliverGrid(
+                        delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                            return Padding(
+                              padding: EdgeInsets.all(5.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  TableScreen.ListOfSubCategories.clear();
+                                  getsub(TableScreen.AllItems[index]['name']);
+                                },
+                                child: Card(
+                                  color: Colors.brown[100],
+                                  child: Center(
+                                      child: Text(
+                                          '${TableScreen.AllItems[index]['name']}',style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor*20,color: Colors.blueAccent),),),
+                                ),
+                              ),
+                            );
+                          },
+                          childCount: TableScreen.AllItems.length,
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          ///no.of items in the horizontal axis
+                          crossAxisCount: (data.size.width / 600.0).round(),
+                        ),
+                      )
+                    ],
+                  )
+                  ),
 
               Padding(
                 padding: const EdgeInsets.all(2.0),
                 child: Container(
-                  color: Colors.yellow,
+                  color: Colors.brown[100],
                   width: data.size.width / 3.2,
                   height: data.size.height / 4,
-                  child: Column(
+                  child: ListView(
                     children: <Widget>[
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-
-
                           ///////////////waitin button
                           Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(2.0),
                             child: MaterialButton(
                               minWidth: data.size.width / 9.2,
                               color: Colors.blue,
@@ -427,12 +438,12 @@ class _TableScreenState extends State<TableScreen> {
                                 tableitems.clear();
                                 Navigator.of(context).pop();
                               },
-                              child: Text('Waiting'),
+                              child: Text('Waiting',style: TextStyle(color: Colors.brown[100]),),
                             ),
                           ),
                           /////// submut button
                           Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(2.0),
                             child: MaterialButton(
                               minWidth: data.size.width / 9.2,
                               color: Colors.blue,
@@ -457,7 +468,9 @@ class _TableScreenState extends State<TableScreen> {
                                       "mapValue": {
                                         "fields": {
                                           "qtt": {"doubleValue": "${i.qtt}"},
-                                          "price": {"doubleValue": "${i.Price}"},
+                                          "price": {
+                                            "doubleValue": "${i.Price}"
+                                          },
                                           "name": {
                                             "stringValue": "${i.description}"
                                           },
@@ -472,7 +485,10 @@ class _TableScreenState extends State<TableScreen> {
 
                                 var bodypost = jsonEncode({
                                   "fields": {
-                                    "billnum": {"stringValue": "${MainScreen.alltrans.length + 1}"},
+                                    "billnum": {
+                                      "stringValue":
+                                          "${MainScreen.alltrans.length + 1}"
+                                    },
                                     "tablename": {"stringValue": "1"},
                                     "total": {"doubleValue": total},
                                     "items": {
@@ -482,22 +498,15 @@ class _TableScreenState extends State<TableScreen> {
                                 });
                                 await http.post(posturl, body: bodypost);
                                 getalltransaction();
-                                 await  Printing.layoutPdf(onLayout: buildPdf);
-
-
+                                await Printing.layoutPdf(onLayout: buildPdf);
                               },
-                              child: Text('Submit'),
+                              child: Text('Submit',style: TextStyle(color: Colors.brown[100])),
                             ),
                           ),
 
-                        ],
-                      ),
-                      Row(crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          //////////////waiting button
+                      //////////////waiting button
                           Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(2.0),
                             child: MaterialButton(
                               minWidth: data.size.width / 9.2,
                               color: Colors.blue,
@@ -516,25 +525,22 @@ class _TableScreenState extends State<TableScreen> {
                                 }
                                 Navigator.of(context).pop();
                               },
-                              child: Text('Cancel Table'),
+                              child: Text('Cancel Table',style: TextStyle(color: Colors.brown[100])),
                             ),
                           ),
                           ////print button
                           Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.all(2.0),
                             child: MaterialButton(
                               minWidth: data.size.width / 9.2,
                               color: Colors.blue,
                               onPressed: () async {
                                 Printing.layoutPdf(onLayout: buildPdf);
-
-
                               },
-                              child: Text('Print'),
+                              child: Text('Print',style: TextStyle(color: Colors.brown[100])),
                             ),
                           )
-                        ],
-                      ),
+
 
                     ],
                   ),
@@ -555,64 +561,60 @@ class trans {
   double totalprice;
   trans(this.description, this.Price, this.qtt, this.totalprice);
 }
+
 List<int> buildPdf(PdfPageFormat format) {
   final pdf.Document doc = pdf.Document();
 
   doc.addPage(
     pdf.Page(
-      pageFormat:PdfPageFormat(50* PDFPageFormat.MM,100.0 * PDFPageFormat.MM),
+      pageFormat:
+          PdfPageFormat(40 * PDFPageFormat.MM, 100.0 * PDFPageFormat.MM),
       build: (pdf.Context context) {
         return pdf.ConstrainedBox(
           constraints: const pdf.BoxConstraints.expand(),
           child: pdf.FittedBox(
-            child:pdf.Center(
-                child: pdf.Column(
-              children: [
-                pdf.Text('caffe'),
-                pdf.Text('phone number'),
-                pdf.Text('adress: Nabatieh '),
-                pdf.SizedBox(
-                    height:30
-                ),
-                  pdf.ListView.builder(itemBuilder: (context,index){
-                    return pdf.Row(
-                        children: [
+            child: pdf.Center(
+              child: pdf.Column(children: [
+                pdf.Text('Sparrow Caffe',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.Text('phone : 03854666',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.Text('adress: Nabatieh ',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.Text('Merjeoun Street ',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.SizedBox(height: 20),
+                pdf.Text("${MainScreen.alltrans.length + 1}",style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.Text('----------------------------------------',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.FittedBox(
+                  child:   pdf.ListView.builder(
+                      itemBuilder: (context, index) {
+                        return pdf.Row(children: [
                           pdf.Text(tableitems[index].description),
-                          pdf.SizedBox(
-                              width:10
-                          ),
+                          pdf.SizedBox(width: 10),
                           pdf.Text('${tableitems[index].Price}'),
-                          pdf.SizedBox(
-                              width: 10
-                          ),
+                          pdf.SizedBox(width: 10),
                           pdf.Text('${tableitems[index].qtt}'),
-                          pdf.SizedBox(
-                              width: 10
-                          ),
-                          pdf.Text('${tableitems[index].totalprice}'),
-                        ]
-                    );
-                  },
-
-
+                          pdf.SizedBox(width: 10),
+                          pdf.Text('${tableitems[index].Price*tableitems[index].qtt}'),
+                        ]);
+                      },
                       itemCount: tableitems.length),
+                ),
 
-
-
-              ]
+                pdf.Text('----------------------------------------',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.Row(
+                  children: [
+                    pdf.Text('Total',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                    pdf.SizedBox(width: 10),
+                    pdf.Text('$total',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                  ]
+                ),
+                pdf.Text('Thank You',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.SizedBox(height:50),
+              ]),
             ),
-
-
-        ),
-
           ),
         );
-
       },
-
     ),
   );
 
   return doc.save();
-
 }
