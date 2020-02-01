@@ -7,10 +7,13 @@ import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_counter/flutter_counter.dart';
 import 'package:database/database.dart';
 import 'package:pdf/pdf.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/widgets.dart' as pdf;
 import 'package:printing/printing.dart';
-
+import 'package:random_color/random_color.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+var isPrinted = false;
+var bill = 0;
 var now = new DateTime.now();
 int day = now.day;
 int year = now.year;
@@ -18,6 +21,7 @@ int month = now.month;
 final database = MemoryDatabase();
 List<trans> tableitems = [];
 var total = 0.0;
+
 class TableScreen extends StatefulWidget {
   static const String id = 'Table_Screen';
   static var AllItems = [];
@@ -31,7 +35,7 @@ class TableScreen extends StatefulWidget {
 
 class _TableScreenState extends State<TableScreen> {
   double heightofAppbar = 80.0;
-
+  RandomColor _randomColor = RandomColor();
   final pdf.Document doc = pdf.Document();
   bool _saving = false;
   var Listcat = [];
@@ -62,6 +66,14 @@ class _TableScreenState extends State<TableScreen> {
 //      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
 //    });
     Navigator.of(context).pop();
+  }
+
+  void ifPrinted() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isPrinted =
+          prefs.getBool('${TableScreen.TableName}') == null ? false : true;
+    });
   }
 
   void getwaiting(String tablename) async {
@@ -150,8 +162,8 @@ class _TableScreenState extends State<TableScreen> {
   @override
   void initState() {
     super.initState();
+    ifPrinted();
     getwaiting(TableScreen.TableName);
-
   }
 
   @override
@@ -230,9 +242,15 @@ class _TableScreenState extends State<TableScreen> {
                                     decimalPlaces: 0,
                                     onChanged: (value) {
                                       // get the latest value from here
-                                      setState(() {
-                                        trans.qtt = value;
-                                      });
+                                      if(isPrinted){
+                                        Alert(context: context, title: "You  cannot Change", desc: "Printed Bill").show();
+                                      }
+                                      else{
+                                        setState(() {
+                                          trans.qtt = value;
+                                        });
+                                      }
+
                                     },
                                   ),
                                 ),
@@ -262,16 +280,26 @@ class _TableScreenState extends State<TableScreen> {
                                               MaterialButton(
                                                   child: Text('Yes'),
                                                   onPressed: () {
-                                                    for (var i in tableitems) {
-                                                      if (trans.description ==
-                                                          i.description) {
-                                                        setState(() {
-                                                          tableitems.remove(i);
-                                                        });
-                                                        Navigator.of(context)
-                                                            .pop();
-                                                      }
+                                                      if (isPrinted){
+                                                        Alert(context: context, title: "You  cannot Delete", desc: "Printed Bill").show();
                                                     }
+                                                      else{
+
+                                                        for (var i
+                                                        in tableitems) {
+                                                          if (trans
+                                                              .description ==
+                                                              i.description) {
+                                                            setState(() {
+                                                              tableitems
+                                                                  .remove(i);
+                                                            });
+                                                            Navigator.of(
+                                                                context)
+                                                                .pop();
+                                                          }
+                                                        }
+                                                      }
                                                   }),
                                             ],
                                           );
@@ -337,19 +365,39 @@ class _TableScreenState extends State<TableScreen> {
                                     },
                                     child: Card(
                                         elevation: 20.0,
-                                        color: Colors.blueAccent,
+                                        color: _randomColor.randomColor(
+                                            colorHue: ColorHue.multiple(
+                                                colorHues: [
+                                              ColorHue.yellow,
+                                              ColorHue.pink
+                                            ])),
                                         child: Center(
                                           child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: <Widget>[
                                               Text(
-                                                  '${TableScreen.ListOfSubCategories[index]['name']}',style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor*20,color: Colors.brown[100]),),
+                                                '${TableScreen.ListOfSubCategories[index]['name']}',
+                                                style: TextStyle(
+                                                    fontSize: MediaQuery.of(
+                                                                context)
+                                                            .textScaleFactor *
+                                                        20,
+                                                    color: Colors.brown[100]),
+                                              ),
                                               SizedBox(
                                                 height: 20,
                                               ),
                                               Text(
-                                                  '${TableScreen.ListOfSubCategories[index]['price']}L.L',style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor*20,color: Colors.brown[100])),
+                                                  '${TableScreen.ListOfSubCategories[index]['price']}L.L',
+                                                  style: TextStyle(
+                                                      fontSize: MediaQuery.of(
+                                                                  context)
+                                                              .textScaleFactor *
+                                                          20,
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
                                             ],
                                           ),
                                         ))),
@@ -387,10 +435,22 @@ class _TableScreenState extends State<TableScreen> {
                                   getsub(TableScreen.AllItems[index]['name']);
                                 },
                                 child: Card(
-                                  color: Colors.brown[100],
+                                  color: _randomColor.randomColor(
+                                      colorHue: ColorHue.multiple(colorHues: [
+                                    ColorHue.red,
+                                    ColorHue.blue
+                                  ])),
                                   child: Center(
-                                      child: Text(
-                                          '${TableScreen.AllItems[index]['name']}',style: TextStyle(fontSize: MediaQuery.of(context).textScaleFactor*20,color: Colors.blueAccent),),),
+                                    child: Text(
+                                      '${TableScreen.AllItems[index]['name']}',
+                                      style: TextStyle(
+                                          fontSize: MediaQuery.of(context)
+                                                  .textScaleFactor *
+                                              20,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
                                 ),
                               ),
                             );
@@ -403,145 +463,162 @@ class _TableScreenState extends State<TableScreen> {
                         ),
                       )
                     ],
-                  )
-                  ),
+                  )),
 
               Padding(
                 padding: const EdgeInsets.all(2.0),
                 child: Container(
-                  color: Colors.brown[100],
                   width: data.size.width / 3.2,
                   height: data.size.height / 4,
                   child: ListView(
                     children: <Widget>[
-                          ///////////////waitin button
-                          Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: MaterialButton(
-                              minWidth: data.size.width / 9.2,
-                              color: Colors.blue,
-                              onPressed: () async {
-                                for (var msg in tableitems) {
-                                  await database
-                                      .collection(TableScreen.TableName)
-                                      .insert(
-                                    data: {
-                                      'name': msg.description,
-                                      'price': msg.Price,
-                                      'qtt': msg.qtt,
-                                      'get': 'yes',
-                                    },
-                                  );
-                                }
-                                MainScreen.ListOfTable[TableScreen.indexx]
-                                    ['iswaiting'] = true;
-                                tableitems.clear();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text('Waiting',style: TextStyle(color: Colors.brown[100]),),
-                            ),
+                      ///////////////waitin button
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: MaterialButton(
+                          minWidth: data.size.width / 9.2,
+                          color: Colors.blue,
+                          onPressed: () async {
+                            for (var msg in tableitems) {
+                              await database
+                                  .collection(TableScreen.TableName)
+                                  .insert(
+                                data: {
+                                  'name': msg.description,
+                                  'price': msg.Price,
+                                  'qtt': msg.qtt,
+                                  'get': 'yes',
+                                },
+                              );
+                            }
+                            MainScreen.ListOfTable[TableScreen.indexx]
+                                ['iswaiting'] = true;
+                            tableitems.clear();
+                            Navigator.of(context).pop();
+                          },
+                          child: Text(
+                            'Waiting',
+                            style: TextStyle(color: Colors.brown[100]),
                           ),
-                          /////// submut button
-                          Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: MaterialButton(
-                              minWidth: data.size.width / 9.2,
-                              color: Colors.blue,
-                              onPressed: () async {
-                                print(MainScreen.ListOfTable);
-                                for (var i in MainScreen.ListOfTable) {
-                                  if ('Table ${i['numb']}' ==
-                                      TableScreen.TableName) {
-                                    print(i['iswaiting']);
-                                    setState(() {
-                                      i['iswaiting'] = false;
-                                    });
-                                  }
-                                }
-                                print(MainScreen.ListOfTable);
-                                var posturl =
-                                    'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
-                                var postlist = [];
-                                for (var i in tableitems) {
-                                  setState(() {
-                                    postlist.add({
-                                      "mapValue": {
-                                        "fields": {
-                                          "qtt": {"doubleValue": "${i.qtt}"},
-                                          "price": {
-                                            "doubleValue": "${i.Price}"
-                                          },
-                                          "name": {
-                                            "stringValue": "${i.description}"
-                                          },
-                                          "totalprice": {
-                                            "doubleValue": "${i.qtt * i.Price}"
-                                          }
-                                        }
-                                      }
-                                    });
-                                  });
-                                }
+                        ),
+                      ),
+                      /////// submut button
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: MaterialButton(
+                          minWidth: data.size.width / 9.2,
+                          color: Colors.blue,
+                          onPressed: () async {
+                            final SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
 
-                                var bodypost = jsonEncode({
-                                  "fields": {
-                                    "billnum": {
-                                      "stringValue":
-                                          "${MainScreen.alltrans.length + 1}"
-                                    },
-                                    "tablename": {"stringValue": "1"},
-                                    "total": {"doubleValue": total},
-                                    "items": {
-                                      "arrayValue": {"values": postlist}
+                            setState(() {
+                              bill = (prefs.getInt('bill') ?? 0) + 1;
+                            });
+                            print(MainScreen.ListOfTable);
+                            for (var i in MainScreen.ListOfTable) {
+                              if ('Table ${i['numb']}' ==
+                                  TableScreen.TableName) {
+                                print(i['iswaiting']);
+                                setState(() {
+                                  i['iswaiting'] = false;
+                                });
+                              }
+                            }
+                            print(MainScreen.ListOfTable);
+                            var posturl =
+                                'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
+                            var postlist = [];
+                            for (var i in tableitems) {
+                              setState(() {
+                                postlist.add({
+                                  "mapValue": {
+                                    "fields": {
+                                      "qtt": {"doubleValue": "${i.qtt}"},
+                                      "price": {"doubleValue": "${i.Price}"},
+                                      "name": {
+                                        "stringValue": "${i.description}"
+                                      },
+                                      "totalprice": {
+                                        "doubleValue": "${i.qtt * i.Price}"
+                                      }
                                     }
                                   }
                                 });
-                                await http.post(posturl, body: bodypost);
-                                getalltransaction();
-                                await Printing.layoutPdf(onLayout: buildPdf);
-                              },
-                              child: Text('Submit',style: TextStyle(color: Colors.brown[100])),
-                            ),
-                          ),
+                              });
+                            }
+
+                            var bodypost = jsonEncode({
+                              "fields": {
+                                "billnum": {"stringValue": "$bill"},
+                                "tablename": {
+                                  "stringValue": "${TableScreen.TableName}"
+                                },
+                                "total": {"doubleValue": total},
+                                "items": {
+                                  "arrayValue": {"values": postlist}
+                                }
+                              }
+                            });
+                            await http.post(posturl, body: bodypost);
+                            getalltransaction();
+                            prefs.remove('${TableScreen.TableName}');
+                            await Printing.layoutPdf(onLayout: buildPdf);
+                            prefs.setInt('bill', bill);
+                          },
+                          child: Text('Submit',
+                              style: TextStyle(color: Colors.brown[100])),
+                        ),
+                      ),
 
                       //////////////waiting button
-                          Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: MaterialButton(
-                              minWidth: data.size.width / 9.2,
-                              color: Colors.blue,
-                              onPressed: () async {
-                                for (var i in MainScreen.ListOfTable) {
-                                  setState(() {
-                                    tableitems.clear();
-                                  });
-                                  if ('Table ${i['numb']}' ==
-                                      TableScreen.TableName) {
-                                    print(i['iswaiting']);
-                                    setState(() {
-                                      i['iswaiting'] = false;
-                                    });
-                                  }
-                                }
-                                Navigator.of(context).pop();
-                              },
-                              child: Text('Cancel Table',style: TextStyle(color: Colors.brown[100])),
-                            ),
-                          ),
-                          ////print button
-                          Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: MaterialButton(
-                              minWidth: data.size.width / 9.2,
-                              color: Colors.blue,
-                              onPressed: () async {
-                                Printing.layoutPdf(onLayout: buildPdf);
-                              },
-                              child: Text('Print',style: TextStyle(color: Colors.brown[100])),
-                            ),
-                          )
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: MaterialButton(
+                          minWidth: data.size.width / 9.2,
+                          color: Colors.blue,
+                          onPressed: () async {
+                            for (var i in MainScreen.ListOfTable) {
+                              setState(() {
+                                tableitems.clear();
+                              });
+                              if ('Table ${i['numb']}' ==
+                                  TableScreen.TableName) {
+                                print(i['iswaiting']);
+                                setState(() {
+                                  i['iswaiting'] = false;
+                                });
+                              }
+                            }
+                            SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                            prefs.remove('${TableScreen.TableName}');
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Cancel Table',
+                              style: TextStyle(color: Colors.brown[100])),
+                        ),
+                      ),
+                      ////print button
+                      Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: MaterialButton(
+                          minWidth: data.size.width / 9.2,
+                          color: Colors.blue,
+                          onPressed: () async {
+                            setState(() {
+                              isPrinted=true;
+                            });
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            prefs.setBool('${TableScreen.TableName}', true);
 
-
+                            Printing.layoutPdf(onLayout: buildPdf);
+                          },
+                          child: Text('Print',
+                              style: TextStyle(color: Colors.brown[100])),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -575,15 +652,21 @@ List<int> buildPdf(PdfPageFormat format) {
           child: pdf.FittedBox(
             child: pdf.Center(
               child: pdf.Column(children: [
-                pdf.Text('Sparrow Caffe',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                pdf.Text('phone : 03854666',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                pdf.Text('adress: Nabatieh ',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                pdf.Text('Merjeoun Street ',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.Text('Sparrow Caffe',
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                pdf.Text('phone : 03854666',
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                pdf.Text('adress: Nabatieh ',
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                pdf.Text('Merjeoun Street ',
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
                 pdf.SizedBox(height: 20),
-                pdf.Text("${MainScreen.alltrans.length + 1}",style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                pdf.Text('----------------------------------------',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
+                pdf.Text("$bill",
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                pdf.Text('----------------------------------------',
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
                 pdf.FittedBox(
-                  child:   pdf.ListView.builder(
+                  child: pdf.ListView.builder(
                       itemBuilder: (context, index) {
                         return pdf.Row(children: [
                           pdf.Text(tableitems[index].description),
@@ -592,22 +675,24 @@ List<int> buildPdf(PdfPageFormat format) {
                           pdf.SizedBox(width: 10),
                           pdf.Text('${tableitems[index].qtt}'),
                           pdf.SizedBox(width: 10),
-                          pdf.Text('${tableitems[index].Price*tableitems[index].qtt}'),
+                          pdf.Text(
+                              '${tableitems[index].Price * tableitems[index].qtt}'),
                         ]);
                       },
                       itemCount: tableitems.length),
                 ),
-
-                pdf.Text('----------------------------------------',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                pdf.Row(
-                  children: [
-                    pdf.Text('Total',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                    pdf.SizedBox(width: 10),
-                    pdf.Text('$total',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                  ]
-                ),
-                pdf.Text('Thank You',style: pdf.TextStyle(fontWeight:pdf.FontWeight.bold)),
-                pdf.SizedBox(height:50),
+                pdf.Text('----------------------------------------',
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                pdf.Row(children: [
+                  pdf.Text('Total',
+                      style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                  pdf.SizedBox(width: 10),
+                  pdf.Text('$total',
+                      style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                ]),
+                pdf.Text('Thank You',
+                    style: pdf.TextStyle(fontWeight: pdf.FontWeight.bold)),
+                pdf.SizedBox(height: 50),
               ]),
             ),
           ),

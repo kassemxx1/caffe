@@ -7,11 +7,11 @@ import 'package:http/http.dart' as http;
 
 import 'Main_Screen.dart';
 
-
 var now = new DateTime.now();
 int day = now.day;
 int year = now.year;
 int month = now.month;
+
 class ReportScreen extends StatefulWidget {
   static const String id = 'Report_Screen';
 
@@ -24,9 +24,9 @@ class _ReportScreenState extends State<ReportScreen> {
   var tomorow = new DateTime(year, month, day, 23, 59, 59, 99, 99);
   var startDate = DateTime(year, month, day, 0, 0, 0, 0, 0);
   var endDate = new DateTime(year, month, day, 23, 59, 59, 99, 99);
-  var DayTransaction=[];
-  var transactiondate=[];
-  var items=[];
+  var DayTransaction = [];
+  var transactiondate = [];
+  var items = [];
   bool sort;
 
   onSortColum(int columnIndex, bool ascending) {
@@ -38,65 +38,63 @@ class _ReportScreenState extends State<ReportScreen> {
       }
     }
   }
-  void getItems(String numb){
-var itemlist;
-    for(var msg in MainScreen.alltrans){
-      if(msg['billnum']==numb){
+
+  void getItems(String numb) {
+    var itemlist;
+    for (var msg in MainScreen.alltrans) {
+      if (msg['billnum'] == numb) {
         setState(() {
           itemlist = jsonDecode(msg['items']);
         });
         items.clear();
-        for (var msg in itemlist['arrayValue']['values']){
+        for (var msg in itemlist['arrayValue']['values']) {
           final name = msg['mapValue']['fields']['name']['stringValue'];
-          final total=msg['mapValue']['fields']['totalprice']['doubleValue'];
-          final qtt=msg['mapValue']['fields']['qtt']['doubleValue'];
-          final price=msg['mapValue']['fields']['price']['doubleValue'];
+          final total = msg['mapValue']['fields']['totalprice']['doubleValue'];
+          final qtt = msg['mapValue']['fields']['qtt']['doubleValue'];
+          final price = msg['mapValue']['fields']['price']['doubleValue'];
           setState(() {
             items.add({
-              'name':name,
-              'total':total,
-              'qtt':qtt,
-              'price':price,
+              'name': name,
+              'total': total,
+              'qtt': qtt,
+              'price': price,
             });
           });
         }
-
       }
-
     }
     print(items);
   }
-  void gettransationdate(DateTime startDate ,DateTime endDate){
+
+  void gettransationdate(DateTime startDate, DateTime endDate) {
     transactiondate.clear();
-    for (var msg in MainScreen.alltrans)  {
-            final numb = msg["billnum"];
-            final tablename=msg["tablename"];
-            final total=msg["total"];
-            final time = msg["timestamp"];
-            var timenow=new DateTime(time.year,time.month,time.day,time.hour + 2 ,time.minute,time.second);
-            if (timenow.isAfter(startDate) && timenow.isBefore(endDate) ){
-              setState(()  {
-                transactiondate.add(
-                  transDate(timenow, numb, tablename, total)
-                );
-              });
-
-            }
+    for (var msg in MainScreen.alltrans) {
+      final numb = msg["billnum"];
+      final tablename = msg["tablename"];
+      final total = msg["total"];
+      final time = msg["timestamp"];
+      var timenow = new DateTime(time.year, time.month, time.day, time.hour + 2,
+          time.minute, time.second);
+      if (timenow.isAfter(startDate) && timenow.isBefore(endDate)) {
+        setState(() {
+          transactiondate.add(transDate(timenow, numb, tablename, total));
+        });
+      }
     }
-
-
   }
-  Future<double> getalltransactiondate(DateTime startDate ,DateTime endDate) {
+
+  Future<double> getalltransactiondate(DateTime startDate, DateTime endDate) {
     var qtts = [0.0];
 
     for (var msg in MainScreen.alltrans) {
 //      final numb = msg["fields"]["billnum"]["stringValue"];
 //      final tablename=msg["fields"]["tablename"]["stringValue"];
 
-      final total=msg["total"];
+      final total = msg["total"];
       final time = msg["timestamp"];
-      var timenow=new DateTime(time.year,time.month,time.day,time.hour + 2 ,time.minute,time.second);
-      if (timenow.isAfter(startDate) && timenow.isBefore(endDate) ){
+      var timenow = new DateTime(time.year, time.month, time.day, time.hour + 2,
+          time.minute, time.second);
+      if (timenow.isAfter(startDate) && timenow.isBefore(endDate)) {
         setState(() {
           qtts.add(total);
         });
@@ -106,23 +104,26 @@ var itemlist;
 
     return new Future(() => result);
   }
+
   @override
   void initState() {
     super.initState();
     sort = false;
     gettransationdate(startDate, tomorow);
   }
+
   @override
   Widget build(BuildContext context) {
     final data = MediaQuery.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text('Report'),),
+      appBar: AppBar(
+        title: Text('Report'),
+      ),
       body: Column(
         children: <Widget>[
           Container(
-            height: data.size.height/3,
+            height: data.size.height / 3,
             color: Colors.brown[100],
-
             child: Column(
               children: <Widget>[
                 Row(
@@ -131,7 +132,12 @@ var itemlist;
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text('start Date:',style: TextStyle(fontSize: 35*data.size.width/1500,color: Colors.black),),
+                        Text(
+                          'start Date:',
+                          style: TextStyle(
+                              fontSize: 35 * data.size.width / 1500,
+                              color: Colors.black),
+                        ),
                         FlatButton(
                             onPressed: () {
                               DatePicker.showDatePicker(context,
@@ -139,11 +145,12 @@ var itemlist;
                                   minTime: DateTime(2019, 1, 1),
                                   maxTime: DateTime(2025, 6, 7),
                                   onChanged: (date) {}, onConfirm: (date) {
-                                    setState(() {
-                                      startDate = new DateTime(date.year,date.month,date.day,0,0,0);
-                                    });
-                                    gettransationdate(startDate, endDate);
-                                  },
+                                setState(() {
+                                  startDate = new DateTime(
+                                      date.year, date.month, date.day, 0, 0, 0);
+                                });
+                                gettransationdate(startDate, endDate);
+                              },
                                   currentTime: DateTime.now(),
                                   locale: LocaleType.en);
                             },
@@ -155,13 +162,19 @@ var itemlist;
                                 '-',
                                 dd
                               ])}',
-                              style: TextStyle(color: Colors.blue,fontSize:35*data.size.width/1500.0,fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 35 * data.size.width / 1500.0,
+                                  fontWeight: FontWeight.bold),
                             )),
                       ],
                     ),
                     Row(
                       children: <Widget>[
-                        Text('End Date:',style: TextStyle(fontSize: 35*data.size.width/1500.0,color: Colors.black)),
+                        Text('End Date:',
+                            style: TextStyle(
+                                fontSize: 35 * data.size.width / 1500.0,
+                                color: Colors.black)),
                         FlatButton(
                             onPressed: () {
                               DatePicker.showDatePicker(context,
@@ -169,12 +182,12 @@ var itemlist;
                                   minTime: DateTime(2019, 1, 1),
                                   maxTime: DateTime(2025, 6, 7),
                                   onChanged: (date) {}, onConfirm: (date) {
-                                    setState(() {
-                                      endDate = date.add(new Duration(
-                                          hours: 23, minutes: 59, seconds: 59));
-                                    });
-                                    gettransationdate(startDate, endDate);
-                                  },
+                                setState(() {
+                                  endDate = date.add(new Duration(
+                                      hours: 23, minutes: 59, seconds: 59));
+                                });
+                                gettransationdate(startDate, endDate);
+                              },
                                   currentTime: DateTime.now(),
                                   locale: LocaleType.en);
                             },
@@ -186,7 +199,10 @@ var itemlist;
                                 '-',
                                 dd
                               ])}',
-                              style: TextStyle(color: Colors.blue,fontSize: 35*data.size.width/1500.0,fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 35 * data.size.width / 1500.0,
+                                  fontWeight: FontWeight.bold),
                             )),
                       ],
                     ),
@@ -198,21 +214,28 @@ var itemlist;
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text('Daily',style: TextStyle(fontSize: 35*data.size.width/1500,fontWeight: FontWeight.bold,),),
+                    Text(
+                      'Daily',
+                      style: TextStyle(
+                        fontSize: 35 * data.size.width / 1500,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     FutureBuilder(
-                        builder:
-                            (BuildContext context, AsyncSnapshot<double> qttnumbr) {
+                        builder: (BuildContext context,
+                            AsyncSnapshot<double> qttnumbr) {
                           return Center(
                             child: Text(
                               'Tolal  : ${qttnumbr.data} L.L',
-                              style: TextStyle(color: Colors.black,
+                              style: TextStyle(
+                                  color: Colors.black,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 35*data.size.width/1500),
+                                  fontSize: 35 * data.size.width / 1500),
                             ),
                           );
                         },
                         initialData: 1.0,
-                        future:getalltransactiondate(today, tomorow)),
+                        future: getalltransactiondate(today, tomorow)),
                   ],
                 ),
                 SizedBox(
@@ -221,29 +244,35 @@ var itemlist;
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text('Between Date',style: TextStyle(fontSize: 35*data.size.width/1500,fontWeight: FontWeight.bold,),),
+                    Text(
+                      'Between Date',
+                      style: TextStyle(
+                        fontSize: 35 * data.size.width / 1500,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     FutureBuilder(
-                        builder:
-                            (BuildContext context, AsyncSnapshot<double> qttnumbr) {
+                        builder: (BuildContext context,
+                            AsyncSnapshot<double> qttnumbr) {
                           return Center(
                             child: Text(
                               'Tolal  : ${qttnumbr.data} L.L',
-                              style: TextStyle(color: Colors.black,
+                              style: TextStyle(
+                                  color: Colors.black,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 35*data.size.width/1500),
+                                  fontSize: 35 * data.size.width / 1500),
                             ),
                           );
                         },
                         initialData: 1.0,
-                        future:getalltransactiondate(startDate, endDate)),
+                        future: getalltransactiondate(startDate, endDate)),
                   ],
                 ),
               ],
             ),
           ),
           Container(
-
-            height: data.size.height *1.5 /3,
+            height: data.size.height * 1.5 / 3,
             child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: DataTable(
@@ -253,8 +282,8 @@ var itemlist;
                   DataColumn(
                     label: Text(
                       'Date',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     onSort: (columnIndex, ascending) {
                       setState(() {
@@ -267,109 +296,113 @@ var itemlist;
                   DataColumn(
                     label: Text(
                       'BillNumb',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     numeric: true,
                   ),
                   DataColumn(
                     label: Text(
                       'TableNumb',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
-
                   ),
                   DataColumn(
                     label: Text(
                       'Total',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     numeric: true,
                   ),
                 ],
-                rows: transactiondate.map((transDate)=>
-                    DataRow(cells:[
-                      DataCell(Text(
-                        '${formatDate(transDate.time, [
-                          yyyy,
-                          '-',
-                          mm,
-                          '-',
-                          dd,
-                          '   ',
-                          hh,
-                          ':',
-                          nn
-                        ])}',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      )),
-                      DataCell(MaterialButton(
-                        child: Text(
-                          '${transDate.numb}',
-                          style: TextStyle(fontWeight: FontWeight.bold,color: Colors.blue),
-                        ),
-                        onPressed: ()async{
-                         await getItems(transDate.numb);
-                          showDialog(context: context,
-                          builder: (BuildContext context){
-                            return StatefulBuilder(
-                              builder: (context,setstate) {
-                                return AlertDialog(
-                                  content: Container(
-                                    height: 500,
-                                    width: 400,
-                                    child: Card(
-                                      child: ListView.builder(
-                                        itemCount: items.length,
-                                          itemBuilder: (context, index) {
-                                            return Row(
-                                              children: <Widget>[
-                                                Text('${items[index]['name']}'),
-                                                Text('${items[index]['price']}'),
-                                                Text('${items[index]['qtt']}'),
-                                                Text('${items[index]['total']}'),
-                                              ],
-                                            );
-                                          }
-
-
-                                      ),
-
-                                    ),
-                                  ),
-                                );
-                              }
-                            );
-                          }
-                          );
-                        },
-                      )),
-                      DataCell(Text(
-                        '${transDate.tablename}',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      )),
-                      DataCell(Text(
-                        '${transDate.total}',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      )),
-
-                    ]
-                    )
-
-                ).toList(),
+                rows: transactiondate
+                    .map((transDate) => DataRow(cells: [
+                          DataCell(Text(
+                            '${formatDate(transDate.time, [
+                              yyyy,
+                              '-',
+                              mm,
+                              '-',
+                              dd,
+                              '   ',
+                              hh,
+                              ':',
+                              nn
+                            ])}',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          )),
+                          DataCell(MaterialButton(
+                            child: Text(
+                              '${transDate.numb}',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue),
+                            ),
+                            onPressed: () async {
+                              await getItems(transDate.numb);
+                              showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return StatefulBuilder(
+                                        builder: (context, setstate) {
+                                      return AlertDialog(
+                                        content: Container(
+                                          height: 500,
+                                          width: 400,
+                                          child: Card(
+                                            child: ListView.builder(
+                                                itemCount: items.length,
+                                                itemBuilder: (context, index) {
+                                                  return Row(
+                                                    children: <Widget>[
+                                                      Text(
+                                                          '${items[index]['name']}'),
+                                                      SizedBox(
+                                                        width: 20,
+                                                      ),
+                                                      Text(
+                                                          '${items[index]['price']}'),
+                                                      SizedBox(
+                                                        width: 20,
+                                                      ),
+                                                      Text(
+                                                          '${items[index]['qtt']}'),
+                                                      SizedBox(
+                                                        width: 20,
+                                                      ),
+                                                      Text(
+                                                          '${items[index]['total']}'),
+                                                    ],
+                                                  );
+                                                }),
+                                          ),
+                                        ),
+                                      );
+                                    });
+                                  });
+                            },
+                          )),
+                          DataCell(Text(
+                            '${transDate.tablename}',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          )),
+                          DataCell(Text(
+                            '${transDate.total}',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          )),
+                        ]))
+                    .toList(),
               ),
-
-
             ),
-
           )
         ],
       ),
     );
   }
 }
+
 class transDate {
   DateTime time;
   String numb;

@@ -23,10 +23,12 @@ class _LoginScreenState extends State<LoginScreen> {
     listPassword.clear();
     for (var msg in data["documents"]) {
       final pass = msg["fields"]["password"]["stringValue"];
+      final isAdmin= msg["fields"]["admin"]["booleanValue"];
 
       setState(() {
         listPassword.add({
           'password':pass,
+          'isAdmin':isAdmin,
 
         });
       });
@@ -58,68 +60,73 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: Colors.grey,
                 child: Center(
 
-                    child: Card(
-                      color: Colors.white.withOpacity(.5),
-                      elevation: 40,
+                    child: Container(
+                      height: data.size.height/3,
+                     width: data.size.width/3,
+                      child: Card(
+                        color: Colors.white.withOpacity(.5),
+                        elevation: 40,
 
-                      borderOnForeground: true,
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                'Welcome To Sparrow Caffe',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 25,
+                        borderOnForeground: true,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  'Welcome To Sparrow Caffe',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 25,
 
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'Enter Your Password',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 25,
+                                Text(
+                                  'Enter Your Password',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 25,
 
+                                  ),
                                 ),
-                              ),
-                              TextField(
-                                controller: _textEditingController1,
-                                keyboardType: TextInputType.emailAddress,
-                                textAlign: TextAlign.center,
-                                onChanged: (value) {
-                                  setState(() {
-                                    password=value;
+                                TextField(
+                                  controller: _textEditingController1,
+                                  keyboardType: TextInputType.emailAddress,
+                                  textAlign: TextAlign.center,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      password=value;
 
-                                  });
-                                },
-                                obscureText: true,
-                                decoration:
-                                KTextFieldImputDecoration.copyWith(
-                                    hintText:
-                                    'Enter Your Password'),
-                              ),
-                              Center(
-                                  child:MaterialButton(
-                                    color: Colors.blue,
-                                    onPressed: (){
-                                      for(var pass in listPassword){
-                                        if (password==pass['password']){
+                                    });
+                                  },
+                                  obscureText: true,
+                                  decoration:
+                                  KTextFieldImputDecoration.copyWith(
+                                      hintText:
+                                      'Enter Your Password'),
+                                ),
+                                Center(
+                                    child:MaterialButton(
+                                      color: Colors.blue,
+                                      onPressed: (){
+                                        for(var pass in listPassword){
+                                          if (password==pass['password']){
+                                            MainScreen.isAmmin=pass['isAdmin'];
 
 
-                                          Navigator.pushNamed(context,MainScreen.id);
+                                            Navigator.pushNamed(context,MainScreen.id);
+                                          }
                                         }
-                                      }
-                                    },
-                                    child: Text('Login'),
-                                  )
-                              ),
+                                      },
+                                      child: Text('Login'),
+                                    )
+                                ),
 
 
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),

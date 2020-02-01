@@ -34,6 +34,9 @@ dependencies:
   date_format: ^1.0.8
   pdf: ^1.4.1
   printing: ^3.1.0
+  random_color: ^1.0.3
+  rflutter_alert: ^1.0.3
+
 
 
 
