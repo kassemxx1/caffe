@@ -12,6 +12,8 @@ import 'package:pdf/widgets.dart' as pdf;
 import 'package:printing/printing.dart';
 import 'package:random_color/random_color.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+
+
 var isPrinted = false;
 var bill = 0;
 var now = new DateTime.now();
@@ -24,6 +26,7 @@ var total = 0.0;
 
 class TableScreen extends StatefulWidget {
   static const String id = 'Table_Screen';
+  static var numberOfBill ;
   static var AllItems = [];
   static String TableName = '';
   static var ListOfCategories = [];
@@ -40,8 +43,9 @@ class _TableScreenState extends State<TableScreen> {
   bool _saving = false;
   var Listcat = [];
   void getalltransaction() async {
+
     var url =
-        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
+        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=10000';
     var response = await http.get(url);
     Map data = json.decode(response.body);
     MainScreen.alltrans.clear();
@@ -67,7 +71,18 @@ class _TableScreenState extends State<TableScreen> {
 //    });
     Navigator.of(context).pop();
   }
-
+  void getnumbOfBill()async{
+    var url =
+        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/billnumb?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=10000';
+    var response = await http.get(url);
+    Map data = json.decode(response.body);
+    for (var msg in data['documents']){
+      setState(() {
+        TableScreen.numberOfBill=msg["fields"]["bill"]["integeValue"];
+      });
+    }
+    print(TableScreen.numberOfBill);
+  }
   void ifPrinted() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -164,6 +179,7 @@ class _TableScreenState extends State<TableScreen> {
     super.initState();
     ifPrinted();
     getwaiting(TableScreen.TableName);
+    getnumbOfBill();
   }
 
   @override
@@ -365,39 +381,38 @@ class _TableScreenState extends State<TableScreen> {
                                     },
                                     child: Card(
                                         elevation: 20.0,
-                                        color: _randomColor.randomColor(
-                                            colorHue: ColorHue.multiple(
-                                                colorHues: [
-                                              ColorHue.yellow,
-                                              ColorHue.pink
-                                            ])),
+                                        color: Colors.blueAccent,
                                         child: Center(
                                           child: Column(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.center,
                                             children: <Widget>[
-                                              Text(
-                                                '${TableScreen.ListOfSubCategories[index]['name']}',
-                                                style: TextStyle(
-                                                    fontSize: MediaQuery.of(
-                                                                context)
-                                                            .textScaleFactor *
-                                                        20,
-                                                    color: Colors.brown[100]),
-                                              ),
-                                              SizedBox(
-                                                height: 20,
-                                              ),
-                                              Text(
-                                                  '${TableScreen.ListOfSubCategories[index]['price']}L.L',
+                                              Center(
+                                                child: Text(
+                                                  '${TableScreen.ListOfSubCategories[index]['name']}',
                                                   style: TextStyle(
                                                       fontSize: MediaQuery.of(
                                                                   context)
                                                               .textScaleFactor *
                                                           20,
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold)),
+                                                      color: Colors.white),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 20,
+                                              ),
+                                              Center(
+                                                child: Text(
+                                                    '${TableScreen.ListOfSubCategories[index]['price']}L.L',
+                                                    style: TextStyle(
+                                                        fontSize: MediaQuery.of(
+                                                                    context)
+                                                                .textScaleFactor *
+                                                            20,
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
                                             ],
                                           ),
                                         ))),
@@ -435,11 +450,7 @@ class _TableScreenState extends State<TableScreen> {
                                   getsub(TableScreen.AllItems[index]['name']);
                                 },
                                 child: Card(
-                                  color: _randomColor.randomColor(
-                                      colorHue: ColorHue.multiple(colorHues: [
-                                    ColorHue.red,
-                                    ColorHue.blue
-                                  ])),
+                                  color: Colors.brown[100],
                                   child: Center(
                                     child: Text(
                                       '${TableScreen.AllItems[index]['name']}',
@@ -447,7 +458,7 @@ class _TableScreenState extends State<TableScreen> {
                                           fontSize: MediaQuery.of(context)
                                                   .textScaleFactor *
                                               20,
-                                          color: Colors.white,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
@@ -513,7 +524,7 @@ class _TableScreenState extends State<TableScreen> {
                                 await SharedPreferences.getInstance();
 
                             setState(() {
-                              bill = (prefs.getInt('bill') ?? 0) + 1;
+                              bill =(prefs.getInt('bill') ?? 0) + 1;
                             });
                             print(MainScreen.ListOfTable);
                             for (var i in MainScreen.ListOfTable) {
@@ -550,7 +561,7 @@ class _TableScreenState extends State<TableScreen> {
 
                             var bodypost = jsonEncode({
                               "fields": {
-                                "billnum": {"stringValue": "$bill"},
+                                "billnum": {"stringValue": "${TableScreen.numberOfBill}"},
                                 "tablename": {
                                   "stringValue": "${TableScreen.TableName}"
                                 },
@@ -608,6 +619,7 @@ class _TableScreenState extends State<TableScreen> {
                           onPressed: () async {
                             setState(() {
                               isPrinted=true;
+
                             });
                             SharedPreferences prefs =
                                 await SharedPreferences.getInstance();

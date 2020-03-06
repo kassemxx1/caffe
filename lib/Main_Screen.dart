@@ -7,12 +7,13 @@ import 'package:flutter/material.dart';
 import 'Table_Screen.dart';
 import 'constants.dart';
 import 'package:dropdown_formfield/dropdown_formfield.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MainScreen extends StatefulWidget {
   static const String id = 'Main_Screen';
   static var ListOfTable = [];
   static var alltrans = [];
-  static var isAmmin ;
+  static var isAmmin;
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -32,20 +33,22 @@ class _MainScreenState extends State<MainScreen> {
   var newitem = '';
   var newprice = 0;
   var allcat = [];
-  void getalltransaction() async {
-    var url =
-        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction';
-    var response = await http.get(url);
-    Map data = json.decode(response.body);
-    MainScreen.alltrans.clear();
-    for (var msg in data["documents"]) {
-      final numb = msg["fields"]["billnum"]["stringValue"];
-      final tablename = msg["fields"]["tablename"]["stringValue"];
-      final total = msg["fields"]["total"]["doubleValue"].toDouble();
-      final time = DateTime.parse(msg["createTime"]);
-      final items = msg["fields"]["items"];
+  void adddate()async{
+    final messages= await  Firestore.instance.collection('transaction');
 
-      setState(() {
+  }
+  void getalltransaction() async {
+    await  Firestore.instance.collection('transaction').snapshots().listen((data) {
+      MainScreen.alltrans.clear();
+      data.documents.forEach((doc) {
+
+      final numb = doc["billnum"];
+      final tablename = doc["tablename"];
+      final total = doc["total"].toDouble();
+      final time = DateTime.parse(doc["createTime"]);
+      final items = doc["items"];
+      doc.data.addAll({'time':time});
+              setState(() {
         MainScreen.alltrans.add({
           'billnum': numb,
           'tablename': tablename,
@@ -54,36 +57,74 @@ class _MainScreenState extends State<MainScreen> {
           'items': jsonEncode(items),
         });
       });
-    }
+      });
+    });
+
+//    var url =
+//        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=100000';
+//    var response = await http.get(url);
+//    Map data = json.decode(response.body);
+//    MainScreen.alltrans.clear();
+//    for (var msg in data["documents"]) {
+//      final numb = msg["fields"]["billnum"]["stringValue"];
+//      final tablename = msg["fields"]["tablename"]["stringValue"];
+//      final total = msg["fields"]["total"]["doubleValue"].toDouble();
+//      final time = DateTime.parse(msg["createTime"]);
+//      final items = msg["fields"]["items"];
+//
+//      setState(() {
+//        MainScreen.alltrans.add({
+//          'billnum': numb,
+//          'tablename': tablename,
+//          'total': total,
+//          'timestamp': time,
+//          'items': jsonEncode(items),
+//        });
+//      });
+//    }
 //    MainScreen.alltrans.sort((a, b) {
 //      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
 //    });
-    print(MainScreen.alltrans);
+
   }
 
+  void firestoretest() async {}
+
   void getallcat() async {
-    var url1 =
-        'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/categories';
-    var response = await http.get(url1);
-
-    Map data = json.decode(response.body);
-    allcat.clear();
-    for (var msg in data['documents']) {
-      final numb = msg['fields']['name']["stringValue"];
-
-      setState(() {
-        allcat.add({
-          'display': numb,
-          'value': numb,
+  await  Firestore.instance.collection('categories').snapshots().listen((data) {
+      data.documents.forEach((doc) {
+        final numb = doc['name'];
+        setState(() {
+          allcat.add({
+            'display': numb,
+            'value': numb,
+          });
         });
       });
-    }
+    });
+
+//    var url1 =
+//        'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/categories?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=100000';
+//    var response = await http.get(url1);
+//
+//    Map data = json.decode(response.body);
+//    allcat.clear();
+//    for (var msg in data['documents']) {
+//      final numb = msg['fields']['name']["stringValue"];
+//
+//      setState(() {
+//        allcat.add({
+//          'display': numb,
+//          'value': numb,
+//        });
+//      });
+//    }
   }
 
   void getTableNumber() async {
     MainScreen.ListOfTable.clear();
     var url1 =
-        'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/tables';
+        'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/tables?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=100000';
     var response = await http.get(url1);
 
     Map data = json.decode(response.body);
@@ -106,7 +147,7 @@ class _MainScreenState extends State<MainScreen> {
   void getallItems() async {
     TableScreen.AllItems.clear();
     var url1 =
-        'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/categories';
+        'https://firestore.googleapis.com/v1/projects/caffe-38150/databases/(default)/documents/categories?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=100000';
     var response = await http.get(url1);
 
     Map data = json.decode(response.body);
@@ -128,6 +169,7 @@ class _MainScreenState extends State<MainScreen> {
     getallItems();
     getallcat();
     getalltransaction();
+
   }
 
   @override
@@ -137,232 +179,234 @@ class _MainScreenState extends State<MainScreen> {
         drawer: Drawer(
           child: Container(
               child: Center(
-            child: MainScreen.isAmmin? ListView(children: [
-              MaterialButton(
-                child: Text('Add New Categoie'),
-                onPressed: () async {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          content: Card(
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 10, right: 10, top: 10),
-                                    child: TextField(
-                                      controller: _textEditingController1,
-                                      keyboardType:
-                                      TextInputType.emailAddress,
-                                      textAlign: TextAlign.center,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          nameofcategorie = value;
-                                        });
-                                      },
-                                      decoration: KTextFieldImputDecoration
-                                          .copyWith(
-                                          hintText:
-                                          'Enter Name of categori'),
-                                    )),
-                                MaterialButton(
-                                  onPressed: () async {
-                                    var posturl =
-                                        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/categories';
-                                    var bodypost = jsonEncode({
-                                      "fields": {
-                                        "name": {
-                                          "stringValue": nameofcategorie
+            child: MainScreen.isAmmin
+                ? ListView(children: [
+                    MaterialButton(
+                      child: Text('Add New Categoie'),
+                      onPressed: () async {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                content: Card(
+                                  child: Column(
+                                    children: <Widget>[
+                                      Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 10, right: 10, top: 10),
+                                          child: TextField(
+                                            controller: _textEditingController1,
+                                            keyboardType:
+                                                TextInputType.emailAddress,
+                                            textAlign: TextAlign.center,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                nameofcategorie = value;
+                                              });
+                                            },
+                                            decoration: KTextFieldImputDecoration
+                                                .copyWith(
+                                                    hintText:
+                                                        'Enter Name of categori'),
+                                          )),
+                                      MaterialButton(
+                                        onPressed: () async {
+                                          var posturl =
+                                              'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/categories';
+                                          var bodypost = jsonEncode({
+                                            "fields": {
+                                              "name": {
+                                                "stringValue": nameofcategorie
+                                              },
+                                            }
+                                          });
+                                          await http.post(posturl,
+                                              body: bodypost);
+                                          getallItems();
+                                          _textEditingController1.clear();
+                                          Navigator.of(context).pop();
                                         },
-                                      }
-                                    });
-                                    await http.post(posturl,
-                                        body: bodypost);
-                                    getallItems();
-                                    _textEditingController1.clear();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Send'),
+                                        child: Text('Send'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      });
-                },
-              ),
-              MaterialButton(
-                child: Text('Add New Item'),
-                onPressed: () {
-                  getallcat();
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        var categorieValue = '';
-                        return StatefulBuilder(
-                          builder: (context, setState) {
-                            return AlertDialog(
-                              content: Card(
-                                child: Column(
-                                  children: <Widget>[
-                                    Container(
-                                      child: DropDownFormField(
-                                        titleText: 'Select Categorie',
-                                        hintText: 'Please choose one',
-                                        value: categorieValue,
-                                        onSaved: (value) {
-                                          setState(() {
-                                            categorieValue = value;
-                                          });
-                                        },
-                                        onChanged: (value) {
-                                          setState(() {
-                                            categorieValue = value;
-                                          });
-                                        },
-                                        dataSource: allcat,
-                                        textField: 'display',
-                                        valueField: 'value',
+                              );
+                            });
+                      },
+                    ),
+                    MaterialButton(
+                      child: Text('Add New Item'),
+                      onPressed: () {
+                        getallcat();
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              var categorieValue = '';
+                              return StatefulBuilder(
+                                builder: (context, setState) {
+                                  return AlertDialog(
+                                    content: Card(
+                                      child: Column(
+                                        children: <Widget>[
+                                          Container(
+                                            child: DropDownFormField(
+                                              titleText: 'Select Categorie',
+                                              hintText: 'Please choose one',
+                                              value: categorieValue,
+                                              onSaved: (value) {
+                                                setState(() {
+                                                  categorieValue = value;
+                                                });
+                                              },
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  categorieValue = value;
+                                                });
+                                              },
+                                              dataSource: allcat,
+                                              textField: 'display',
+                                              valueField: 'value',
+                                            ),
+                                          ),
+                                          Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10, right: 10, top: 10),
+                                              child: TextField(
+                                                controller:
+                                                    _textEditingController1,
+                                                keyboardType:
+                                                    TextInputType.emailAddress,
+                                                textAlign: TextAlign.center,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    newitem = value;
+                                                  });
+                                                },
+                                                decoration:
+                                                    KTextFieldImputDecoration
+                                                        .copyWith(
+                                                            hintText:
+                                                                'Enter Name of Item'),
+                                              )),
+                                          Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 10, right: 10, top: 10),
+                                              child: TextField(
+                                                keyboardType:
+                                                    TextInputType.emailAddress,
+                                                textAlign: TextAlign.center,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    newprice = int.parse(value);
+                                                  });
+                                                },
+                                                decoration:
+                                                    KTextFieldImputDecoration
+                                                        .copyWith(
+                                                            hintText:
+                                                                'Enter the Price'),
+                                              )),
+                                          MaterialButton(
+                                            onPressed: () async {
+                                              var posturl =
+                                                  'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/sub';
+                                              var bodypost = jsonEncode({
+                                                "fields": {
+                                                  "name": {
+                                                    "stringValue": newitem
+                                                  },
+                                                  "price": {
+                                                    "integerValue": newprice
+                                                  },
+                                                  "sub": {
+                                                    "stringValue":
+                                                        "$categorieValue"
+                                                  },
+                                                }
+                                              });
+                                              await http.post(posturl,
+                                                  body: bodypost);
+                                              getallItems();
+                                              _textEditingController1.clear();
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('Send'),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 10, right: 10, top: 10),
-                                        child: TextField(
-                                          controller:
-                                          _textEditingController1,
-                                          keyboardType:
-                                          TextInputType.emailAddress,
-                                          textAlign: TextAlign.center,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              newitem = value;
-                                            });
-                                          },
-                                          decoration: KTextFieldImputDecoration
-                                              .copyWith(
-                                              hintText:
-                                              'Enter Name of Item'),
-                                        )),
-                                    Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 10, right: 10, top: 10),
-                                        child: TextField(
-                                          keyboardType:
-                                          TextInputType.emailAddress,
-                                          textAlign: TextAlign.center,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              newprice = int.parse(value);
-                                            });
-                                          },
-                                          decoration:
-                                          KTextFieldImputDecoration
-                                              .copyWith(
-                                              hintText:
-                                              'Enter the Price'),
-                                        )),
-                                    MaterialButton(
-                                      onPressed: () async {
-                                        var posturl =
-                                            'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/sub';
-                                        var bodypost = jsonEncode({
-                                          "fields": {
-                                            "name": {
-                                              "stringValue": newitem
+                                  );
+                                },
+                              );
+                            });
+                      },
+                    ),
+                    MaterialButton(
+                        child: Text('Reports'),
+                        onPressed: () {
+                          Navigator.pushNamed(context, ReportScreen.id);
+                        }),
+                    MaterialButton(
+                      child: Text('Add new Table'),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                content: Card(
+                                  child: Column(
+                                    children: <Widget>[
+                                      Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 10, right: 10, top: 10),
+                                          child: TextField(
+                                            keyboardType:
+                                                TextInputType.emailAddress,
+                                            textAlign: TextAlign.center,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                numbOfTablle = value;
+                                              });
                                             },
-                                            "price": {
-                                              "integerValue": newprice
-                                            },
-                                            "sub": {
-                                              "stringValue":
-                                              "$categorieValue"
-                                            },
-                                          }
-                                        });
-                                        await http.post(posturl,
-                                            body: bodypost);
-                                        getallItems();
-                                        _textEditingController1.clear();
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text('Send'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      });
-                },
-              ),
-              MaterialButton(
-                  child: Text('Reports'),
-                  onPressed: () {
-                    Navigator.pushNamed(context, ReportScreen.id);
-                  }),
-              MaterialButton(
-                child: Text('Add new Table'),
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          content: Card(
-                            child: Column(
-                              children: <Widget>[
-                                Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 10, right: 10, top: 10),
-                                    child: TextField(
-                                      keyboardType:
-                                      TextInputType.emailAddress,
-                                      textAlign: TextAlign.center,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          numbOfTablle = value;
-                                        });
-                                      },
-                                      decoration: KTextFieldImputDecoration
-                                          .copyWith(
-                                          hintText:
-                                          'Enter Number of Table'),
-                                    )),
-                                MaterialButton(
-                                  onPressed: () async {
-                                    var posturl =
-                                        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/tables';
-                                    var bodypost = jsonEncode({
-                                      "fields": {
-                                        "numb": {
-                                          "stringValue": numbOfTablle
+                                            decoration: KTextFieldImputDecoration
+                                                .copyWith(
+                                                    hintText:
+                                                        'Enter Number of Table'),
+                                          )),
+                                      MaterialButton(
+                                        onPressed: () async {
+                                          var posturl =
+                                              'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/tables';
+                                          var bodypost = jsonEncode({
+                                            "fields": {
+                                              "numb": {
+                                                "stringValue": numbOfTablle
+                                              },
+                                              "iswaiting": {
+                                                "booleanValue": false
+                                              },
+                                            }
+                                          });
+                                          await http.post(posturl,
+                                              body: bodypost);
+                                          getTableNumber();
+                                          _textEditingController1.clear();
+                                          Navigator.of(context).pop();
                                         },
-                                        "iswaiting": {
-                                          "booleanValue": false
-                                        },
-                                      }
-                                    });
-                                    await http.post(posturl,
-                                        body: bodypost);
-                                    getTableNumber();
-                                    _textEditingController1.clear();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Send'),
+                                        child: Text('Send'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
-                      });
-                },
-              ),
-
-            ]):Container(
-              child:Text('Your Are Not the Owner'),
-            ),
+                              );
+                            });
+                      },
+                    ),
+                  ])
+                : Container(
+                    child: Text('Your Are Not the Owner'),
+                  ),
           )),
         ),
         appBar: AppBar(
@@ -372,7 +416,6 @@ class _MainScreenState extends State<MainScreen> {
               style: TextStyle(color: Colors.black),
             ),
           ),
-
         ),
         body: Row(
           children: <Widget>[

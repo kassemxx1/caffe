@@ -57,17 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
 //          decoration: BoxDecoration(
 //              image: DecorationImage(
 //                  image: AssetImage("assets/images/pirate.jpg"), fit: BoxFit.fill)),
-                color: Colors.grey,
+
                 child: Center(
 
-                    child: Container(
-                      height: data.size.height/3,
-                     width: data.size.width/3,
-                      child: Card(
-                        color: Colors.white.withOpacity(.5),
-                        elevation: 40,
-
-                        borderOnForeground: true,
                         child: Center(
                           child: Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -129,8 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                      ),
-                    ),
+
 
                 )
             );

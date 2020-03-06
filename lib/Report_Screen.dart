@@ -5,6 +5,7 @@ import 'package:date_format/date_format.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'Main_Screen.dart';
 
 var now = new DateTime.now();
@@ -38,7 +39,83 @@ class _ReportScreenState extends State<ReportScreen> {
       }
     }
   }
+  void getalltransaction() async {
+    await  Firestore.instance.collection('transaction').snapshots().listen((data) {
+      MainScreen.alltrans.clear();
+      data.documents.forEach((doc) {
+        final numb = doc["billnum"];
+        final tablename = doc["tablename"];
+        final total = doc["total"].toDouble();
+        final time = DateTime.parse(doc["createTime"]);
+        final items = doc["items"];
+        setState(() {
+          MainScreen.alltrans.add({
+            'billnum': numb,
+            'tablename': tablename,
+            'total': total,
+            'timestamp': time,
+            'items': jsonEncode(items),
+          });
+        });
+      });
+    });
 
+//    var url =
+//        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=100000';
+//    var response = await http.get(url);
+//    Map data = json.decode(response.body);
+//    MainScreen.alltrans.clear();
+//    for (var msg in data["documents"]) {
+//      final numb = msg["fields"]["billnum"]["stringValue"];
+//      final tablename = msg["fields"]["tablename"]["stringValue"];
+//      final total = msg["fields"]["total"]["doubleValue"].toDouble();
+//      final time = DateTime.parse(msg["createTime"]);
+//      final items = msg["fields"]["items"];
+//
+//      setState(() {
+//        MainScreen.alltrans.add({
+//          'billnum': numb,
+//          'tablename': tablename,
+//          'total': total,
+//          'timestamp': time,
+//          'items': jsonEncode(items),
+//        });
+//      });
+//    }
+//    MainScreen.alltrans.sort((a, b) {
+//      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
+//    });
+
+  }
+
+//  void getalltransaction() async {
+//    var url =
+//        'https://firestore.googleapis.com/v1beta1/projects/caffe-38150/databases/(default)/documents/transaction?key=AIzaSyD_q0HMvbXc8kZod1a_-ZJcZwT2PtOK1LU&pageSize=10000';
+//    var response = await http.get(url);
+//    Map data = json.decode(response.body);
+//    MainScreen.alltrans.clear();
+//    for (var msg in data["documents"]) {
+//      final numb = msg["fields"]["billnum"]["stringValue"];
+//      final tablename = msg["fields"]["tablename"]["stringValue"];
+//      final total = msg["fields"]["total"]["doubleValue"].toDouble();
+//      final time = DateTime.parse(msg["createTime"]);
+//      final items = msg["fields"]["items"];
+//
+//      setState(() {
+//        MainScreen.alltrans.add({
+//          'billnum': numb,
+//          'tablename': tablename,
+//          'total': total,
+//          'timestamp': time,
+//          'items': jsonEncode(items),
+//        });
+//      });
+//    }
+//    MainScreen.alltrans.sort((a, b) {
+//      return a['numb'].toLowerCase().compareTo(b['numb'].toLowerCase());
+//    });
+//    print(MainScreen.alltrans);
+//  }
   void getItems(String numb) {
     var itemlist;
     for (var msg in MainScreen.alltrans) {
@@ -67,20 +144,42 @@ class _ReportScreenState extends State<ReportScreen> {
   }
 
   void gettransationdate(DateTime startDate, DateTime endDate) {
-    transactiondate.clear();
-    for (var msg in MainScreen.alltrans) {
-      final numb = msg["billnum"];
-      final tablename = msg["tablename"];
-      final total = msg["total"];
-      final time = msg["timestamp"];
-      var timenow = new DateTime(time.year, time.month, time.day, time.hour + 2,
-          time.minute, time.second);
-      if (timenow.isAfter(startDate) && timenow.isBefore(endDate)) {
+
+    Firestore.instance.collection('transaction')..snapshots().listen((data) {
+      transactiondate.clear();
+      data.documents.forEach((doc) {
+        final numb = doc["billnum"];
+        final tablename = doc["tablename"];
+        final total = doc["total"];
+        final time = doc["timestamp"];
+        var timenow = new DateTime(time.year, time.month, time.day, time.hour + 2,
+            time.minute, time.second);
         setState(() {
           transactiondate.add(transDate(timenow, numb, tablename, total));
         });
-      }
-    }
+      });
+      transactiondate.sort((a, b) {
+        return a.numb.toLowerCase().compareTo(b.numb.toLowerCase());
+      });
+    });
+
+
+//    for (var msg in MainScreen.alltrans) {
+//      final numb = msg["billnum"];
+//      final tablename = msg["tablename"];
+//      final total = msg["total"];
+//      final time = msg["timestamp"];
+//      var timenow = new DateTime(time.year, time.month, time.day, time.hour + 2,
+//          time.minute, time.second);
+//      if (timenow.isAfter(startDate) && timenow.isBefore(endDate)) {
+//        setState(() {
+//          transactiondate.add(transDate(timenow, numb, tablename, total));
+//        });
+//      }
+//    }
+//    transactiondate.sort((a, b) {
+//      return a.numb.toLowerCase().compareTo(b.numb.toLowerCase());
+//    });
   }
 
   Future<double> getalltransactiondate(DateTime startDate, DateTime endDate) {
@@ -109,6 +208,7 @@ class _ReportScreenState extends State<ReportScreen> {
   void initState() {
     super.initState();
     sort = false;
+    getalltransaction();
     gettransationdate(startDate, tomorow);
   }
 
